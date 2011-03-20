@@ -4,6 +4,7 @@ prefix = lambda x: os.path.join(os.path.dirname(__file__), x)
 default_visualizations = ['AreaChart', 'BarChart', 'PieChart',
                           'Sunburst', 'Icicle', 'ForceDirected',
                           'Treemap', 'Spacetree', 'RGraph',
+                          'EventTunnel',
                           'Hypertree']
 #build model
 class Build():

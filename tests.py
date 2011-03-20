@@ -120,6 +120,19 @@ tests_model = {
         } 
     ],
 
+    'EventTunnel': [
+        {
+            'Title': 'First example',
+            'Description':
+            """
+            A basic input format example.
+            Only one conversation.
+            """,
+            'Extras': ['excanvas.js'],
+            'Example': True
+        }
+    ],
+
     
     'Hypertree': [
         {

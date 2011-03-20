@@ -160,6 +160,30 @@
         "Fx"
     ],
 
+    "EventTunnel": [
+        "Core",
+        "Options.Canvas",
+        "Options.Node",
+        "Options.Edge",
+        "Options.Fx",
+        "Options.Label",
+        "Options.Tips",
+        "Options.NodeStyles",
+        "Options.Events",
+        "Options.Navigation",
+        "Options.Controller",
+        "Extras",
+        "Canvas",
+        "Complex",
+        "Polar",
+        "Graph.Op",
+        "Graph.Plot",
+        "Graph.Label",
+        "Loader",
+        "Layouts.Radial",
+        "Fx"
+    ],
+
     "RGraph": [
         "Core",
         "Options.Canvas",

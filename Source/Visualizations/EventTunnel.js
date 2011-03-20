@@ -1,10 +1,10 @@
 /*
- * File: RGraph.js
+ * File: EventTunnel.js
  *
  */
 
 /*
-   Class: RGraph
+   Class: EventTunnel
    
    A radial graph visualization with advanced animations.
    
@@ -43,19 +43,19 @@
 
    canvas - Access a <Canvas> instance.
    graph - Access a <Graph> instance.
-   op - Access a <RGraph.Op> instance.
-   fx - Access a <RGraph.Plot> instance.
-   labels - Access a <RGraph.Label> interface implementation.   
+   op - Access a <EventTunnel.Op> instance.
+   fx - Access a <EventTunnel.Plot> instance.
+   labels - Access a <EventTunnel.Label> interface implementation.
 */
 
-$jit.RGraph = new Class( {
+$jit.EventTunnel = new Class( {
 
   Implements: [
       Loader, Extras, Layouts.Radial
   ],
 
   initialize: function(controller){
-    var $RGraph = $jit.RGraph;
+    var $EventTunnel = $jit.EventTunnel;
 
     var config = {
       interpolation: 'linear',
@@ -89,9 +89,9 @@ $jit.RGraph = new Class( {
     };
     this.graph = new Graph(this.graphOptions, this.config.Node,
         this.config.Edge);
-    this.labels = new $RGraph.Label[canvasConfig.Label.type](this);
-    this.fx = new $RGraph.Plot(this, $RGraph);
-    this.op = new $RGraph.Op(this);
+    this.labels = new $EventTunnel.Label[canvasConfig.Label.type](this);
+    this.fx = new $EventTunnel.Plot(this, $EventTunnel);
+    this.op = new $EventTunnel.Op(this);
     this.json = null;
     this.root = null;
     this.busy = false;
@@ -136,7 +136,7 @@ $jit.RGraph = new Class( {
   /*
    Method: plot
   
-   Plots the RGraph. This is a shortcut to *fx.plot*.
+   Plots the EventTunnel. This is a shortcut to *fx.plot*.
   */
   plot: function(){
     this.fx.plot();
@@ -185,7 +185,7 @@ $jit.RGraph = new Class( {
   /* 
   Method: onClick 
   
-  Animates the <RGraph> to center the node specified by *id*.
+  Animates the <EventTunnel> to center the node specified by *id*.
 
    Parameters:
 
@@ -243,12 +243,12 @@ $jit.RGraph = new Class( {
   }
 });
 
-$jit.RGraph.$extend = true;
+$jit.EventTunnel.$extend = true;
 
-(function(RGraph){
+(function(EventTunnel){
 
   /*
-     Class: RGraph.Op
+     Class: EventTunnel.Op
      
      Custom extension of <Graph.Op>.
 
@@ -261,14 +261,14 @@ $jit.RGraph.$extend = true;
      <Graph.Op>
 
   */
-  RGraph.Op = new Class( {
+  EventTunnel.Op = new Class( {
 
     Implements: Graph.Op
 
   });
 
   /*
-     Class: RGraph.Plot
+     Class: EventTunnel.Plot
     
     Custom extension of <Graph.Plot>.
   
@@ -281,14 +281,14 @@ $jit.RGraph.$extend = true;
     <Graph.Plot>
   
   */
-  RGraph.Plot = new Class( {
+  EventTunnel.Plot = new Class( {
 
     Implements: Graph.Plot
 
   });
 
   /*
-    Object: RGraph.Label
+    Object: EventTunnel.Label
 
     Custom extension of <Graph.Label>. 
     Contains custom <Graph.Label.SVG>, <Graph.Label.HTML> and <Graph.Label.Native> extensions.
@@ -302,10 +302,10 @@ $jit.RGraph.$extend = true;
     <Graph.Label>, <Graph.Label.Native>, <Graph.Label.HTML>, <Graph.Label.SVG>.
   
    */
-  RGraph.Label = {};
+  EventTunnel.Label = {};
 
   /*
-     RGraph.Label.Native
+     EventTunnel.Label.Native
 
      Custom extension of <Graph.Label.Native>.
 
@@ -318,12 +318,12 @@ $jit.RGraph.$extend = true;
      <Graph.Label.Native>
 
   */
-  RGraph.Label.Native = new Class( {
+  EventTunnel.Label.Native = new Class( {
     Implements: Graph.Label.Native
   });
 
   /*
-     RGraph.Label.SVG
+     EventTunnel.Label.SVG
     
     Custom extension of <Graph.Label.SVG>.
   
@@ -336,7 +336,7 @@ $jit.RGraph.$extend = true;
     <Graph.Label.SVG>
   
   */
-  RGraph.Label.SVG = new Class( {
+  EventTunnel.Label.SVG = new Class( {
     Implements: Graph.Label.SVG,
 
     initialize: function(viz){
@@ -375,7 +375,7 @@ $jit.RGraph.$extend = true;
   });
 
   /*
-     RGraph.Label.HTML
+     EventTunnel.Label.HTML
 
      Custom extension of <Graph.Label.HTML>.
 
@@ -388,7 +388,7 @@ $jit.RGraph.$extend = true;
      <Graph.Label.HTML>
 
   */
-  RGraph.Label.HTML = new Class( {
+  EventTunnel.Label.HTML = new Class( {
     Implements: Graph.Label.HTML,
 
     initialize: function(viz){
@@ -429,7 +429,7 @@ $jit.RGraph.$extend = true;
   });
 
   /*
-    Class: RGraph.Plot.NodeTypes
+    Class: EventTunnel.Plot.NodeTypes
 
     This class contains a list of <Graph.Node> built-in types. 
     Node types implemented are 'none', 'circle', 'triangle', 'rectangle', 'star', 'ellipse' and 'square'.
@@ -439,7 +439,7 @@ $jit.RGraph.$extend = true;
     Example:
 
     (start code js)
-      RGraph.Plot.NodeTypes.implement({
+      EventTunnel.Plot.NodeTypes.implement({
         'mySpecialType': {
           'render': function(node, canvas) {
             //print your custom node to canvas
@@ -453,7 +453,7 @@ $jit.RGraph.$extend = true;
     (end code)
 
   */
-  RGraph.Plot.NodeTypes = new Class({
+  EventTunnel.Plot.NodeTypes = new Class({
     'none': {
       'render': $.empty,
       'contains': $.lambda(false)
@@ -537,7 +537,7 @@ $jit.RGraph.$extend = true;
   });
 
   /*
-    Class: RGraph.Plot.EdgeTypes
+    Class: EventTunnel.Plot.EdgeTypes
 
     This class contains a list of <Graph.Adjacence> built-in types. 
     Edge types implemented are 'none', 'line' and 'arrow'.
@@ -547,7 +547,7 @@ $jit.RGraph.$extend = true;
     Example:
   
     (start code js)
-      RGraph.Plot.EdgeTypes.implement({
+      EventTunnel.Plot.EdgeTypes.implement({
         'mySpecialType': {
           'render': function(adj, canvas) {
             //print your custom edge to canvas
@@ -561,7 +561,7 @@ $jit.RGraph.$extend = true;
     (end code)
   
   */
-  RGraph.Plot.EdgeTypes = new Class({
+  EventTunnel.Plot.EdgeTypes = new Class({
     'none': $.empty,
     'line': {
       'render': function(adj, canvas) {
@@ -592,4 +592,4 @@ $jit.RGraph.$extend = true;
     }
   });
 
-})($jit.RGraph);
+})($jit.EventTunnel);
