@@ -59,6 +59,7 @@ $jit.EventTunnel = new Class( {
 
     var config = {
       interpolation: 'linear',
+      startTime: 1299990000,
       levelDistance: 100
     };
 
@@ -110,10 +111,11 @@ $jit.EventTunnel = new Class( {
 
    */
   createLevelDistanceFunc: function(){
+    var st = this.config.startTime;
     return function(elem){
       // Debugging: Show the time difference as the label.
-      elem.name = (elem.data.created_at.unix_timestamp - 1299990000);
-      return (elem.data.created_at.unix_timestamp - 1299990000) / 100;
+      elem.name = (elem.data.created_at.unix_timestamp - st);
+      return (elem.data.created_at.unix_timestamp - st) / 100;
     };
   },
 
