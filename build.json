@@ -58,6 +58,9 @@
     "Layouts.Tree": [
       "Layouts"
     ],
+    "Layouts.Tunnel": [
+      "Layouts"
+    ],
     "Layouts.Radial": [
       "Layouts"
     ],
@@ -180,7 +183,7 @@
         "Graph.Plot",
         "Graph.Label",
         "Loader",
-        "Layouts.Radial",
+        "Layouts.Tunnel",
         "Fx"
     ],
 

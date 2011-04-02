@@ -51,7 +51,7 @@
 $jit.EventTunnel = new Class( {
 
   Implements: [
-      Loader, Extras, Layouts.Radial
+      Loader, Extras, Layouts.Tunnel
   ],
 
   initialize: function(controller){
