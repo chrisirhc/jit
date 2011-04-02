@@ -1,6 +1,10 @@
 function init(){
     //init data
     var json = {
+      id: "0",
+      name: "Faux Node",
+      children: [
+        {
       "id": "46805572842033152",
       name: "a",
       data: {
@@ -142,7 +146,9 @@ function init(){
         ]
       }
       ]
-};
+}
+    ]
+    };
     //end
     
     //init EventTunnel
