@@ -3,6 +3,9 @@ function init(){
     var json = {
       id: "0",
       name: "Faux Node",
+      data: {
+        "$alpha": 0
+      },
       children: [
         {
       "id": "46805572842033152",
@@ -171,6 +174,7 @@ function init(){
         },
         //Set Node and Edge styles.
         Node: {
+            overridable: true,
             color: '#ddeeff'
         },
         
@@ -205,17 +209,8 @@ function init(){
             style.display = '';
             style.cursor = 'pointer';
 
-            if (node._depth <= 1) {
-                style.fontSize = "0.8em";
-                style.color = "#ccc";
-            
-            } else if(node._depth == 2){
-                style.fontSize = "0.7em";
-                style.color = "#494949";
-            
-            } else {
-                style.display = 'none';
-            }
+            style.fontSize = "0.8em";
+            style.color = "#ccc";
 
             var left = parseInt(style.left);
             var w = domElement.offsetWidth;
