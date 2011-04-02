@@ -105,9 +105,7 @@ $jit.EventTunnel = new Class( {
     createLevelDistanceFunc 
   
     Returns the levelDistance function used for calculating a node distance 
-    to its origin. This function returns a function that is computed 
-    per level and not per node, such that all nodes with the same depth will have the 
-    same distance to the origin. The resulting function gets the 
+    to its origin. The resulting function gets the
     parent node as parameter and returns a float.
 
    */

@@ -56,7 +56,6 @@ Layouts.Tunnel = new Class({
     graph.eachBFS(this.root, function(elem) {
       var angleSpan = elem.angleSpan.end - elem.angleSpan.begin;
       var angleInit = elem.angleSpan.begin;
-      var len = getLength(elem);
       //Calculate the sum of all angular widths
       var totalAngularWidths = 0, subnodes = [], maxDim = {};
       elem.eachSubnode(function(sib) {
@@ -85,7 +84,7 @@ Layouts.Tunnel = new Class({
 
           for ( var i=0, l=propArray.length; i < l; i++) {
             var pi = propArray[i];
-            child.setPos($P(theta, len), pi);
+            child.setPos($P(theta, getLength(child)), pi);
             child.setData('span', angleProportion, pi);
             child.setData('dim-quotient', child.getData('dim', pi) / maxDim[pi], pi);
           }
