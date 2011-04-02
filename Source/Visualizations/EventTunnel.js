@@ -110,9 +110,10 @@ $jit.EventTunnel = new Class( {
 
    */
   createLevelDistanceFunc: function(){
-    var ld = this.config.levelDistance;
     return function(elem){
-      return (elem._depth + 1) * ld;
+      // Debugging: Show the time difference as the label.
+      elem.name = (elem.data.created_at.unix_timestamp - 1299990000);
+      return (elem.data.created_at.unix_timestamp - 1299990000) / 100;
     };
   },
 
