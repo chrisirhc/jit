@@ -59,8 +59,12 @@ $jit.EventTunnel = new Class( {
 
     var config = {
       interpolation: 'linear',
-      startTime: 1299990000,
-      levelDistance: 100
+      // might have a farTime
+      // Basically, this time is the time endpoint that is on the near end of tunnel
+      nearTime: (new Date()).getTime() / 1000,
+      // Constant used to calculate distance.
+      constantR: 100,
+      constantS: 4000
     };
 
     this.controller = this.config = $.merge(Options("Canvas", "Node", "Edge",
@@ -111,11 +115,13 @@ $jit.EventTunnel = new Class( {
 
    */
   createLevelDistanceFunc: function(){
-    var st = this.config.startTime;
+    var nt = this.config.nearTime;
+    var s = this.config.constantS;
+    var r = this.config.constantR;
     return function(elem){
-      // Debugging: Show the time difference as the label.
-      elem.name = (elem.data.created_at.unix_timestamp - st);
-      return (elem.data.created_at.unix_timestamp - st) / 100;
+      // TODO change this to the time of the root ?
+      elem.name = (nt - elem.data.created_at.unix_timestamp);
+      return r / (nt - elem.data.created_at.unix_timestamp) * s;
     };
   },
 

@@ -165,6 +165,9 @@ function init(){
             strokeStyle: '#555'
           }
         },
+        // Set the nearTime as the most recent tweet so that we can see
+        // something
+        nearTime: 1300004651,
         //Add navigation capabilities:
         //zooming by scrolling and panning.
         Navigation: {
