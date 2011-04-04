@@ -540,6 +540,34 @@ $jit.EventTunnel.$extend = true;
             dim = node.getData('dim');
         return this.nodeHelper.star.contains(npos, pos, dim);
       }
+    },
+    
+    'reply': {
+    	// Temp: star
+      'render': function(node, canvas){
+        var pos = node.pos.getc(true),
+            dim = node.getData('dim');
+        this.nodeHelper.star.render('fill', pos, dim, canvas);
+      },
+      'contains': function(node, pos) {
+        var npos = node.pos.getc(true),
+            dim = node.getData('dim');
+        return this.nodeHelper.star.contains(npos, pos, dim);
+      }
+    },
+    
+    'retweet': {
+    	// Temp : triangle
+      'render': function(node, canvas){
+        var pos = node.pos.getc(true), 
+            dim = node.getData('dim');
+        this.nodeHelper.triangle.render('fill', pos, dim, canvas);
+      },
+      'contains': function(node, pos) {
+        var npos = node.pos.getc(true), 
+            dim = node.getData('dim');
+        return this.nodeHelper.triangle.contains(npos, pos, dim);
+      }
     }
   });
 

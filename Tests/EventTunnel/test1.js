@@ -236,13 +236,32 @@ function init(){
           panning: true,
           zooming: 10
         },
+        
         //Set Node and Edge styles.
         Node: {
+        	dim: 30,
             overridable: true,
             color: '#ddeeff'
         },
         
+		NodeStyles: {  
+			enable: true,  
+			stylesHover: {  
+				dim: 50,    
+			},  
+			duration: 600  
+		},
+		
+		onBeforePlotNode: function(node) {
+			if (node.data.type == "reply") { 
+				node.data.$type = "reply";
+            } else {
+            	node.data.$type = "retweet";
+            }		
+		},
+        
         Edge: {
+          overridable: true,
           color: '#C17878',
           lineWidth:1.5
         },
