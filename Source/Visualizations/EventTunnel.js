@@ -543,30 +543,44 @@ $jit.EventTunnel.$extend = true;
     },
     
     'reply': {
-    	// Temp: star
       'render': function(node, canvas){
         var pos = node.pos.getc(true),
             dim = node.getData('dim');
-        this.nodeHelper.star.render('fill', pos, dim, canvas);
+
+        this.nodeHelper.circle.render('fill', pos, dim, canvas);
       },
-      'contains': function(node, pos) {
+      'contains': function(node, pos){
         var npos = node.pos.getc(true),
             dim = node.getData('dim');
-        return this.nodeHelper.star.contains(npos, pos, dim);
+        return this.nodeHelper.circle.contains(npos, pos, dim);
       }
     },
     
     'retweet': {
-    	// Temp : triangle
       'render': function(node, canvas){
-        var pos = node.pos.getc(true), 
-            dim = node.getData('dim');
-        this.nodeHelper.triangle.render('fill', pos, dim, canvas);
+        var pos = node.pos.getc(true),
+            dim = node.getData('dim'),
+            color = node.getData('color'),
+            fillColor = this.colorHelper.avgColor(color, 0xFFFFFF),
+            strokeColor = this.colorHelper.avgColor(color, 0xbbbbbb),
+            lineWidth = node.getData('lineWidth');
+
+        fillColor = this.colorHelper.avgColor(fillColor, 0xFFFFFF);
+
+        this.colorHelper.setColor(strokeColor, 'strokeStyle', canvas);
+        this.colorHelper.setColor(fillColor, 'fillStyle', canvas);
+        this.colorHelper.setLineWidth(lineWidth, canvas);
+        this.nodeHelper.circle.render('fill', pos, dim, canvas);
+        this.nodeHelper.circle.render('stroke', pos, dim, canvas);
+
+
+
       },
-      'contains': function(node, pos) {
-        var npos = node.pos.getc(true), 
+      'contains': function(node, pos){
+        var npos = node.pos.getc(true),
             dim = node.getData('dim');
-        return this.nodeHelper.triangle.contains(npos, pos, dim);
+
+        return this.nodeHelper.circle.contains(npos, pos, dim);
       }
     }
   });
@@ -602,6 +616,22 @@ $jit.EventTunnel.$extend = true;
       'render': function(adj, canvas) {
         var from = adj.nodeFrom.pos.getc(true),
             to = adj.nodeTo.pos.getc(true);
+        this.edgeHelper.line.render(from, to, canvas);
+      },
+      'contains': function(adj, pos) {
+        var from = adj.nodeFrom.pos.getc(true),
+            to = adj.nodeTo.pos.getc(true);
+        return this.edgeHelper.line.contains(from, to, pos, this.edge.epsilon);
+      }
+    },
+    'retweet': {
+      'render': function(adj, canvas) {
+        var from = adj.nodeFrom.pos.getc(true),
+            to = adj.nodeTo.pos.getc(true),
+            color = adj.nodeTo.getData('color'),
+            newColor = this.colorHelper.avgColor(color, 0xbbbbbb);
+
+        this.colorHelper.setColor(newColor, 'strokeStyle', canvas);
         this.edgeHelper.line.render(from, to, canvas);
       },
       'contains': function(adj, pos) {

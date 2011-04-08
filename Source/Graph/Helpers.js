@@ -662,3 +662,95 @@ var EdgeHelper = {
     'contains': $.lambda(false)
   }
 };
+
+var ColorHelper = {
+  'parseColorToNum' : function(colorString) {
+    var len = colorString.length;
+    // Remove # symbol
+    if(colorString.charAt(0) == '#') {
+      colorString = colorString.substr(1, len);
+      len = colorString.length;
+    }
+    if(len == 3) {
+      var expandedColor =
+          colorString.charAt(0) + colorString.charAt(0) +
+          colorString.charAt(1) + colorString.charAt(1) +
+          colorString.charAt(2) + colorString.charAt(2);
+      colorString = expandedColor;
+      len = colorString.length;
+    }
+    return parseInt(colorString, 16);
+  },
+
+  'lightenColor' : function(colorString, colorStep) {
+    var colorNumber = this.parseColorToNum(colorString);
+    var r = this.getR(colorNumber);
+    var g = this.getG(colorNumber);
+    var b = this.getB(colorNumber);
+
+    r = r + colorStep > 0xFF ? 0xFF : r + colorStep;
+    g = g + colorStep > 0xFF ? 0xFF : g + colorStep;
+    b = b + colorStep  > 0xFF ? 0xFF : b + colorStep;
+
+    return this.colorToString(r,g,b);
+  },
+
+  'darkenColor' : function(colorString, colorStep) {
+    var colorNumber = this.parseColorToNum(colorString);
+    var r = this.getR(colorNumber);
+    var g = this.getG(colorNumber);
+    var b = this.getB(colorNumber);
+
+    r = (r << 8 - colorStep < 0xFF) ? 0 : r - colorStep;
+    g = (g << 8 - colorStep < 0xFF) ? 0 : g - colorStep;
+    b = (b << 8 - colorStep < 0xFF) ? 0 : b - colorStep;
+
+    return this.colorToString(r,g,b);
+  },
+
+  'avgColor' : function(colorString, color) {
+    var colorNumber = this.parseColorToNum(colorString);
+    var r = this.getR(colorNumber);
+    var g = this.getG(colorNumber);
+    var b = this.getB(colorNumber);
+
+    var r2 = this.getR(color);
+    var g2 = this.getG(color);
+    var b2 = this.getB(color);
+
+    r = (r + r2) >> 1;
+    g = (g + g2) >> 1;
+    b = (b + b2) >> 1;
+
+    return this.colorToString(r,g,b);
+  },
+
+  // type = 'fillStyle' or 'strokeStyle'
+  'setColor' : function(color, type, canvas) {
+    var ctx = canvas.getCtx();
+    ctx[type] = color;
+  },
+
+  'setLineWidth' : function(width, canvas) {
+    var ctx = canvas.getCtx();
+    ctx.lineWidth = width;
+  },
+
+  'getR' : function(rgbHexNum) {
+    return rgbHexNum >> 16;
+  },
+
+  'getG' : function(rgbHexNum) {
+    return rgbHexNum >> 8 & 0xFF;
+  },
+
+  'getB' : function(rgbHexNum) {
+    return rgbHexNum & 0xFF;
+  },
+
+  'colorToString' : function(r,g,b) {
+    colorNum = (r << 16) + (g << 8) + b;
+    return  '#' + colorNum.toString(16);
+  }
+
+};

@@ -91,13 +91,15 @@ var Canvas;
           idLabel = id + "-label", 
           wrapper = $(id),
           width = opt.width || wrapper.offsetWidth,
-          height = opt.height || wrapper.offsetHeight;
+          height = opt.height || wrapper.offsetHeight,
+          backgroundColor = opt.backgroundColor || wrapper.backgroundColor;
       this.id = id;
       //canvas options
       var canvasOptions = {
         injectInto: id,
         width: width,
-        height: height
+        height: height,
+        backgroundColor: backgroundColor
       };
       //create main wrapper
       this.element = $E('div', {
@@ -105,7 +107,8 @@ var Canvas;
         'style': {
           'position': 'relative',
           'width': width + 'px',
-          'height': height + 'px'
+          'height': height + 'px',
+          'backgroundColor' : backgroundColor
         }
       });
       //create label container

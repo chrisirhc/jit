@@ -214,6 +214,11 @@ function init(){
     ]
     };
     //end
+
+  var nodeColor = "#2278a7";
+  var edgeColor = nodeColor;
+  var bgcolor = "#fff";
+  var lineWidth = 3;
     
     //init EventTunnel
     var rgraph = new $jit.EventTunnel({
@@ -221,11 +226,15 @@ function init(){
         injectInto: 'infovis',
         //Optional: create a background canvas that plots
         //concentric circles.
-        background: {
-          CanvasStyles: {
-            strokeStyle: '#555'
-          }
+        'background': {
+          'CanvasStyles': {
+            'strokeStyle': '#ccc'
+          },
+          levelDistance: 80,
+          numberOfCircles: 5
         },
+        // The canvas background color.
+        backgroundColor: bgcolor,
         // Set the nearTime as the most recent tweet so that we can see
         // something
         nearTime: 1300004651,
@@ -233,72 +242,72 @@ function init(){
         //zooming by scrolling and panning.
         Navigation: {
           enable: true,
-          panning: true,
+          panning: false,
           zooming: 10
         },
         
         //Set Node and Edge styles.
-        Node: {
-        	dim: 30,
-            overridable: true,
-            color: '#ddeeff'
-        },
-        
-		NodeStyles: {  
-			enable: true,  
-			stylesHover: {  
-				dim: 50,    
-			},  
-			duration: 600  
-		},
-		
-		onBeforePlotNode: function(node) {
-			if (node.data.type == "reply") { 
-				node.data.$type = "reply";
-            } else {
-            	node.data.$type = "retweet";
-            }		
-		},
-        
-        Edge: {
-          overridable: true,
-          color: '#C17878',
-          lineWidth:1.5
-        },
+      Node: {
+        dim: 10,
+        overridable: true,
+        color: nodeColor,
+        lineWidth: lineWidth
+      },
 
-        onBeforeCompute: function(node){
-            Log.write("centering " + node.name + "...");
-            //Add the relation list in the right column.
-            //This list is taken from the data property of each JSON node.
-            $jit.id('inner-details').innerHTML = node.data.relation;
+      NodeStyles: {
+        enable: true,
+        lineWidth: lineWidth,
+        stylesHover: {
+          dim: 15
         },
-        
-        onAfterCompute: function(){
-            Log.write("done");
-        },
-        //Add the name of the node in the correponding label
-        //and a click handler to move the graph.
-        //This method is called once, on label creation.
-        onCreateLabel: function(domElement, node){
-            domElement.innerHTML = node.name;
-            domElement.onclick = function(){
-                rgraph.onClick(node.id);
-            };
-        },
-        //Change some label dom properties.
-        //This method is called each time a label is plotted.
-        onPlaceLabel: function(domElement, node){
-            var style = domElement.style;
-            style.display = '';
-            style.cursor = 'pointer';
+        duration: 600
+      },
 
-            style.fontSize = "0.8em";
-            style.color = "#ccc";
-
-            var left = parseInt(style.left);
-            var w = domElement.offsetWidth;
-            style.left = (left - w / 2) + 'px';
+      onBeforePlotNode: function(node) {
+        if (node.data.type == "reply") {
+          node.data.$type = "reply";
+        } else {
+          node.data.$type = "retweet";
         }
+        node.data.$lineWidth = lineWidth;
+      },
+
+      Edge: {
+        overridable: true,
+        color: edgeColor,
+        lineWidth:lineWidth
+      },
+
+      onBeforePlotLine: function(adj){
+        var nodeTo = adj.nodeTo;
+        if (nodeTo.data.type != "reply") {
+          adj.data.$type = "retweet";
+        }
+      },
+
+      //Add the name of the node in the correponding label
+      //and a click handler to move the graph.
+      //This method is called once, on label creation.
+      onCreateLabel: function(domElement, node){
+        domElement.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+        domElement.onclick = function(){
+          rgraph.onClick(node.id);
+          ;  }
+      },
+      //Change some label dom properties.
+      //This method is called each time a label is plotted.
+      onPlaceLabel: function(domElement, node){
+        var style = domElement.style;
+        style.display = '';
+        style.cursor = 'pointer';
+
+        style.fontSize = "0.8em";
+        style.color = "#ccc";
+
+        var left = parseInt(style.left);
+        var w = domElement.offsetWidth;
+        style.left = (left - w / 2) + 'px';
+      }
     });
     //load JSON data
     rgraph.loadJSON(json);

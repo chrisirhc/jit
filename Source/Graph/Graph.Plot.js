@@ -28,6 +28,7 @@ Graph.Plot = {
     //Add helpers
     nodeHelper: NodeHelper,
     edgeHelper: EdgeHelper,
+    colorHelper: ColorHelper,
     
     Interpolator: {
         //node/edge property parsers
