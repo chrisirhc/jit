@@ -324,4 +324,26 @@ function init(){
     //end
     //append information about the root relations in the right column
     $jit.id('inner-details').innerHTML = rgraph.graph.getNode(rgraph.root).data.relation;
+
+    // Go backward in time now time goes backward
+    var button = $jit.id('forward');
+    button.onclick = function() {
+      rgraph.config.nearTime += 1000;
+      rgraph.compute('end');
+      rgraph.fx.animate({
+        modes:['polar'],
+        duration: 1000
+      });
+    };
+
+    // Now time goes forward
+    button = $jit.id('backward');
+    button.onclick = function() {
+      rgraph.config.nearTime -= 1000;
+      rgraph.compute('end');
+      rgraph.fx.animate({
+        modes:['polar'],
+        duration: 1000
+      });
+    };
 }
