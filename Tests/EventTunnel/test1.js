@@ -230,7 +230,8 @@ function init(){
           'CanvasStyles': {
             'strokeStyle': '#ccc'
           },
-          levelDistance: 80,
+          // levelDistance = time interval in seconds
+          levelDistance: 30 * 60,
           numberOfCircles: 5
         },
         // The canvas background color.
@@ -238,6 +239,7 @@ function init(){
         // Set the nearTime as the most recent tweet so that we can see
         // something
         nearTime: 1300004651,
+        farTime: 1299986651,
         //Add navigation capabilities:
         //zooming by scrolling and panning.
         Navigation: {
@@ -314,7 +316,7 @@ function init(){
     //trigger small animation
     rgraph.graph.eachNode(function(n) {
       var pos = n.getPos();
-      pos.setc(-200, -200);
+      pos.setc(0, 0);
     });
     rgraph.compute('end');
     rgraph.fx.animate({
@@ -328,22 +330,16 @@ function init(){
     // Go backward in time now time goes backward
     var button = $jit.id('forward');
     button.onclick = function() {
-      rgraph.config.nearTime += 1000;
-      rgraph.compute('end');
-      rgraph.fx.animate({
-        modes:['polar'],
-        duration: 1000
-      });
+      var nearTime = rgraph.config.nearTime + 1000;
+      var farTime = rgraph.config.farTime + 1000;
+      rgraph.fx.animateTime(nearTime, farTime, {modes:['polar'], duration:1000});
     };
 
     // Now time goes forward
     button = $jit.id('backward');
-    button.onclick = function() {
-      rgraph.config.nearTime -= 1000;
-      rgraph.compute('end');
-      rgraph.fx.animate({
-        modes:['polar'],
-        duration: 1000
-      });
-    };
+  button.onclick = function() {
+    var nearTime = rgraph.config.nearTime - 1000;
+    var farTime = rgraph.config.farTime - 1000;
+    rgraph.fx.animateTime(nearTime, farTime, {modes:['polar'], duration:1000});
+  };
 }
