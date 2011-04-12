@@ -128,7 +128,12 @@ var Canvas;
       var back = opt.background;
       if(back) {
         var backCanvas = new Canvas.Background[back.type](viz, $.extend(back, canvasOptions));
-        this.canvases.push(new Canvas.Base[type](backCanvas));
+        var newCanvas = new Canvas.Base[type](backCanvas);
+        this.canvases.push(newCanvas);
+        if(back.type == 'Circles') {
+          this.circles = backCanvas;
+          this.circlesCanvas = newCanvas;
+        }
       }
       //insert canvases
       var len = this.canvases.length;
@@ -487,26 +492,207 @@ var Canvas;
         CanvasStyles: {},
         offset: 0
       }, options);
+      this.rings = this.resetRings();
+      this.animation = new Animation;
     },
     resize: function(width, height, base) {
       this.plot(base);
     },
-    plot: function(base) {
+
+    'plot': function(base) {
+      base.clear();
       var canvas = base.canvas,
           ctx = base.getCtx(),
           conf = this.config,
           styles = conf.CanvasStyles;
       //set canvas styles
       for(var s in styles) ctx[s] = styles[s];
-      var n = conf.numberOfCircles,
-          rho = conf.levelDistance;
-      for(var i=1; i<=n; i++) {
-        ctx.beginPath();
-        ctx.arc(0, 0, rho * i, 0, 2 * Math.PI, false);
-        ctx.stroke();
-        ctx.closePath();
+
+      for(var i = 0; i < this.rings.length; i++) {
+        this.rings[i].draw(ctx);
       }
-      //TODO(nico): print labels too!
+    },
+    'animate' : function(base, opt) {
+      this.augmentRings();
+
+
+      for(var i = 0; i < this.rings.length; i++) {
+         this.rings[i].compute('end');
+      }
+      var that = this;
+      this.animation.setOptions($.extend(opt, {
+        $animating: false,
+        compute: function(delta) {
+          for(var i = 0; i < that.rings.length; i++) {
+            that.rings[i].animate(delta);
+          }
+          that.plot(base);
+//          base.plot();
+          this.$animating = true;
+        },
+        complete: function() {
+          that.pruneRings();
+        }
+      })).start();
+    },
+    resetRings: function() {
+      rings = [];
+      var nearTime = this.viz.config.nearTime;
+      var farTime = this.viz.config.farTime;
+      var timeInterval = this.config.levelDistance;
+      var curTime = nearTime - timeInterval;
+      while(curTime > farTime) {
+        var ring = new Canvas.Background.Ring(this.viz, {time: curTime});
+        rings.push(ring);
+        curTime -= timeInterval;
+      }
+      return rings;
+    },
+    augmentRings: function() {
+      var nearTime = this.viz.config.nearTime;
+      var farTime = this.viz.config.farTime;
+      var timeInterval = this.config.levelDistance;
+      var firstRing = this.rings[0];
+      var newRing;
+      var options;
+      var last = this.rings.length - 1;
+
+      // Add rings to end
+      var nextRingTime = this.rings[last].time - timeInterval;
+      while(nextRingTime > farTime) {
+        options = {time: nextRingTime};
+        options = $.merge(firstRing.getState(), options);
+
+        newRing = new Canvas.Background.Ring(this.viz, options);
+        this.rings.push(newRing);
+        nextRingTime -= timeInterval;
+      }
+
+      // Add rings to the beginning.
+      var prevRingTime = this.rings[0].time + timeInterval;
+      while(prevRingTime < nearTime) {
+        options = {time: prevRingTime};
+        options = $.merge(firstRing.getState(), options);
+
+        newRing = new Canvas.Background.Ring(this.viz, options);
+        this.rings.unshift(newRing);
+        prevRingTime += timeInterval;
+      }
+    },
+    pruneRings: function() {
+      var nearTime = this.viz.config.nearTime;
+      var farTime = this.viz.config.farTime;
+
+      // Remove rings from end
+      var last = this.rings.length - 1;
+      while(this.rings[last].time < farTime && last >= 0) {
+        // Remove rings at the end
+        this.rings.pop();
+        last = this.rings.length - 1;
+      }
+
+      // Remove rings from beginning
+      while(this.rings[0].time > nearTime && this.rings.length > 0) {
+        this.rings.shift();
+      }
+
+    },
+    'compute' : function(property) {
+      for(var i = 0; i < this.rings.length; i++) {
+        this.rings[i].compute(property);
+      }
     }
+
   });
+
+  Canvas.Background.Ring = new Class({
+    'initialize' : function(viz, options) {
+      this.viz = viz;
+      this.time = options.time ? options.time : ((new Date()).getTime() / 1000);
+      // start and end keep track of start state and end states of an animation.
+      this.start = {
+        'nearTime': this.viz.config.nearTime,
+        'farTime': this.viz.config.farTime,
+        'scale' : this.viz.config.constantS,
+        'radius' : this.viz.config.constantR
+      };
+      this.end = {
+        'nearTime': this.viz.config.nearTime,
+        'farTime': this.viz.config.farTime,
+        'scale' : this.viz.config.constantS,
+        'radius' : this.viz.config.constantR
+      };
+      // current keeps track of the current state.
+      this.current = {
+        'nearTime': this.viz.config.nearTime,
+        'farTime': this.viz.config.farTime,
+        'scale' : this.viz.config.constantS,
+        'radius' : this.viz.config.constantR
+      };
+      var states = ['current', 'start', 'end'];
+      for(var i in states){
+        var state = states[i];
+        if(options[state]) {
+          this.copyProperties(this[state], options[state]);
+        }
+      }
+    },
+    'copyProperties': function(copyTo, copyFrom) {
+       for(var prop in copyFrom) {
+         copyTo[prop] = copyFrom[prop];
+       }
+    },
+    'getState': function() {
+      return{
+        'end': this.end,
+        'start': this.start,
+        'current': this.current
+      }
+    },
+    // computers 'start', 'end', or 'current'
+    'compute' : function(property) {
+      this[property] = {
+        'nearTime': this.viz.config.nearTime,
+        'farTime': this.viz.config.farTime,
+        'scale' : this.viz.config.constantS,
+        'radius' : this.viz.config.constantR
+      };
+    },
+    'calculateDistanceRadius': function(curTime){
+      var nearTime = this.current.nearTime;
+      var scale = this.current.scale;
+      var r = this.current.radius;
+      return r / (nearTime - curTime) * scale;
+    },
+    'animate': function(delta) {
+      this.current.nearTime = this.findDelta(delta, 'nearTime');
+      this.current.farTime = this.findDelta(delta, 'farTime');
+      this.current.radius = this.findDelta(delta, 'radius');
+      this.current.scale = this.findDelta(delta, 'scale');
+
+      if(delta >= 1) {
+        for(var prop in this.current) {
+          this.start[prop] = this.current[prop];
+          this.end[prop] = this.current[prop];
+        }
+      }
+
+    },
+    'findDelta': function(delta, prop) {
+        return (this.end[prop] - this.start[prop]) * delta + this.start[prop];
+    },
+    'draw': function(ctx) {
+
+      var rho = this.calculateDistanceRadius(this.time);
+      if(rho < 0) {
+        return;
+      }
+      ctx.beginPath();
+      ctx.arc(0, 0, rho, 0, 2 * Math.PI, false);
+      ctx.stroke();
+      ctx.closePath();
+    }
+
+
+  })
 })();
