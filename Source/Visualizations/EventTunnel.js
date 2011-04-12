@@ -61,10 +61,13 @@ $jit.EventTunnel = new Class( {
       interpolation: 'linear',
       // might have a farTime
       // Basically, this time is the time endpoint that is on the near end of tunnel
+      // Current time in seconds since 1970
       nearTime: (new Date()).getTime() / 1000,
+      // Far time = 5 hours ago.
+      farTime:  (new Date()).getTime() / 1000 - 5 * 60 * 60,
       // Constant used to calculate distance.
       constantR: 100,
-      constantS: 4000
+      constantS: 8000
     };
 
     this.controller = this.config = $.merge(Options("Canvas", "Node", "Edge",
@@ -105,6 +108,9 @@ $jit.EventTunnel = new Class( {
     this.initializeExtras();
   },
 
+  'getCanvas': function() {
+    return this.canvas;
+  },
   /* 
   
     createLevelDistanceFunc 
@@ -290,7 +296,17 @@ $jit.EventTunnel.$extend = true;
   */
   EventTunnel.Plot = new Class( {
 
-    Implements: Graph.Plot
+    Implements: Graph.Plot,
+
+    animateTime: function(nearTime, farTime, opt, versor) {
+      this.viz.config.farTime = farTime;
+      this.viz.config.nearTime = nearTime;
+      this.viz.compute('end');
+      var circles = this.viz.canvas.circles;
+      opt = $.merge({clearCanvas: true},opt);
+      this.animate(opt, versor);
+      circles.animate(this.viz.canvas.circlesCanvas, opt);
+    }
 
   });
 
