@@ -55,6 +55,7 @@ $jit.EventTunnel = new Class( {
   ],
 
   minRingRadius: 25,
+  maxRingRadius: 300,
 
   initialize: function(controller){
     var $EventTunnel = $jit.EventTunnel;
@@ -68,14 +69,15 @@ $jit.EventTunnel = new Class( {
       // Far time = 5 hours ago.
       farTime:  (new Date()).getTime() / 1000 - 5 * 60 * 60,
       // Constant used to calculate distance.
-      constantR: 100,
-      constantS: 8000
+      constantR: 600,
+      focalLength: 8000,
+      distanceFromCamera: 0
     };
 
     this.controller = this.config = $.merge(Options("Canvas", "Node", "Edge",
         "Fx", "Controller", "Tips", "NodeStyles", "Events", "Navigation", "Label"), config, controller);
 
-    this.computeScale();
+    this.computeFocalLengthAndDistance();
     var canvasConfig = this.config;
     if(canvasConfig.useCanvas) {
       this.canvas = canvasConfig.useCanvas;
@@ -124,27 +126,27 @@ $jit.EventTunnel = new Class( {
 
    */
   createLevelDistanceFunc: function(){
-    var nt = this.config.nearTime;
-    var s = this.config.constantS;
-    var r = this.config.constantR;
+    var that = this;
     return function(elem){
+      var nt = that.config.nearTime;
+      var f = that.config.focalLength;
+      var r = that.config.constantR;
+      var dist = that.config.distanceFromCamera;
       // TODO change this to the time of the root ?
-      var timeDiff = nt - elem.data.created_at.unix_timestamp;
-      if(timeDiff < 0) timeDiff = s / 5;
+      var timeDiff = nt - elem.data.created_at.unix_timestamp + dist;
+      if(timeDiff <= 0) timeDiff = f / 5;
       elem.name = timeDiff;
-      return r / timeDiff * s;
+      return r / timeDiff * f;
     };
   },
 
-  /*
-  Compute a new scale for the placement function.
-  The scale should ensure that the farthest time visible is placed at the
-  minRingDistance.
-   */
-  computeScale: function() {
-    var timeSpan = this.config.nearTime - this.config.farTime;
-    var newScale = this.minRingRadius * timeSpan / this.config.constantR;
-    this.config.constantS = newScale;
+  computeFocalLengthAndDistance: function() {
+    var radius = this.config.constantR;
+    var span = this.config.nearTime - this.config.farTime;
+    var dist = (this.minRingRadius * span) / (this.maxRingRadius - this.minRingRadius);
+    var focalLen = (dist * this.maxRingRadius) / radius;
+    this.config.distanceFromCamera = dist;
+    this.config.focalLength = focalLen;
   },
 
   /* 
@@ -317,7 +319,7 @@ $jit.EventTunnel.$extend = true;
     animateTime: function(nearTime, farTime, opt, versor) {
       this.viz.config.farTime = farTime;
       this.viz.config.nearTime = nearTime;
-      this.viz.computeScale();
+      this.viz.computeFocalLengthAndDistance();
       this.viz.compute('end');
       var circles = this.viz.canvas.circles;
       opt = $.merge({clearCanvas: true},opt);

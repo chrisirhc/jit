@@ -539,7 +539,11 @@ var Canvas;
       var nearTime = this.viz.config.nearTime;
       var farTime = this.viz.config.farTime;
       var timeInterval = this.config.levelDistance;
-      var curTime = nearTime - timeInterval;
+      var dist = this.viz.config.distanceFromCamera;
+      var focalLen = this.viz.config.focalLength;
+      var projectionPlane = nearTime + (dist - focalLen);
+      var curTime = projectionPlane;
+
       while(curTime > farTime) {
         var ring = new Canvas.Background.Ring(this.viz, {time: curTime});
         rings.push(ring);
@@ -549,6 +553,8 @@ var Canvas;
     },
     augmentRings: function() {
       var nearTime = this.viz.config.nearTime;
+      var focalLen = this.viz.config.focalLength;
+      var dist = this.viz.config.distanceFromCamera;
       var farTime = this.viz.config.farTime;
       var timeInterval = this.config.levelDistance;
       var firstRing = this.rings[0];
@@ -558,7 +564,7 @@ var Canvas;
 
       // Add rings to end
       var nextRingTime = this.rings[last].time - timeInterval;
-      while(nextRingTime > farTime) {
+      while(nextRingTime >= farTime) {
         options = {time: nextRingTime, state: firstRing.getState()};
 
         newRing = new Canvas.Background.Ring(this.viz, options);
@@ -567,8 +573,9 @@ var Canvas;
       }
 
       // Add rings to the beginning.
+      var projectionPlane = nearTime + (dist - focalLen);
       var prevRingTime = this.rings[0].time + timeInterval;
-      while(prevRingTime < nearTime) {
+      while(prevRingTime <= projectionPlane) {
         options = {time: prevRingTime, state: firstRing.getState()};
 
         newRing = new Canvas.Background.Ring(this.viz, options);
@@ -621,8 +628,9 @@ var Canvas;
        return {
         nearTime: this.viz.config.nearTime,
         farTime: this.viz.config.farTime,
-        scale : this.viz.config.constantS,
-        radius : this.viz.config.constantR
+        f : this.viz.config.focalLength,
+        radius : this.viz.config.constantR,
+        dist: this.viz.config.distanceFromCamera
       }
     },
     // computers 'start', 'end', or 'current'
@@ -633,11 +641,12 @@ var Canvas;
     },
     'calculateDistanceRadius': function(curTime){
       var nearTime = this.state.nearTime;
-      var scale = this.state.scale;
+      var f = this.state.f;
       var r =  this.state.radius;
-      var timeDiff = nearTime - curTime;
-      if(timeDiff < 0) timeDiff = scale / 5;
-      return r / timeDiff * scale;
+      var dist = this.state.dist;
+      var timeDiff = nearTime - curTime + dist;
+      if(timeDiff < 0) timeDiff = f / 5;
+      return r / timeDiff * f;
     },
     'animate': function(delta) {
       this.currentRadius = this.findDelta(delta);
