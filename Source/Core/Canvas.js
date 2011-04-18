@@ -515,9 +515,8 @@ var Canvas;
     'animate' : function(base, opt) {
       this.augmentRings();
 
-
       for(var i = 0; i < this.rings.length; i++) {
-         this.rings[i].compute('end');
+         this.rings[i].compute('endRadius');
       }
       var that = this;
       this.animation.setOptions($.extend(opt, {
@@ -560,8 +559,7 @@ var Canvas;
       // Add rings to end
       var nextRingTime = this.rings[last].time - timeInterval;
       while(nextRingTime > farTime) {
-        options = {time: nextRingTime};
-        options = $.merge(firstRing.getState(), options);
+        options = {time: nextRingTime, state: firstRing.getState()};
 
         newRing = new Canvas.Background.Ring(this.viz, options);
         this.rings.push(newRing);
@@ -571,8 +569,7 @@ var Canvas;
       // Add rings to the beginning.
       var prevRingTime = this.rings[0].time + timeInterval;
       while(prevRingTime < nearTime) {
-        options = {time: prevRingTime};
-        options = $.merge(firstRing.getState(), options);
+        options = {time: prevRingTime, state: firstRing.getState()};
 
         newRing = new Canvas.Background.Ring(this.viz, options);
         this.rings.unshift(newRing);
@@ -609,81 +606,54 @@ var Canvas;
     'initialize' : function(viz, options) {
       this.viz = viz;
       this.time = options.time ? options.time : ((new Date()).getTime() / 1000);
+      this.state = options.state ? options.state : this.getUpdatedState();
       // start and end keep track of start state and end states of an animation.
-      this.start = {
-        'nearTime': this.viz.config.nearTime,
-        'farTime': this.viz.config.farTime,
-        'scale' : this.viz.config.constantS,
-        'radius' : this.viz.config.constantR
-      };
-      this.end = {
-        'nearTime': this.viz.config.nearTime,
-        'farTime': this.viz.config.farTime,
-        'scale' : this.viz.config.constantS,
-        'radius' : this.viz.config.constantR
-      };
+      // They keep track of the radius.
+      this.startRadius = this.calculateDistanceRadius(this.time);
+      this.endRadius = this.calculateDistanceRadius(this.time);
       // current keeps track of the current state.
-      this.current = {
-        'nearTime': this.viz.config.nearTime,
-        'farTime': this.viz.config.farTime,
-        'scale' : this.viz.config.constantS,
-        'radius' : this.viz.config.constantR
-      };
-      var states = ['current', 'start', 'end'];
-      for(var i in states){
-        var state = states[i];
-        if(options[state]) {
-          this.copyProperties(this[state], options[state]);
-        }
-      }
-    },
-    'copyProperties': function(copyTo, copyFrom) {
-       for(var prop in copyFrom) {
-         copyTo[prop] = copyFrom[prop];
-       }
+      this.currentRadius = this.calculateDistanceRadius(this.time);
     },
     'getState': function() {
-      return{
-        'end': this.end,
-        'start': this.start,
-        'current': this.current
+      return this.state;
+    },
+    'getUpdatedState' : function() {
+       return {
+        nearTime: this.viz.config.nearTime,
+        farTime: this.viz.config.farTime,
+        scale : this.viz.config.constantS,
+        radius : this.viz.config.constantR
       }
     },
     // computers 'start', 'end', or 'current'
+    // Calculates a new radius value based on the current values of nearTime, farTime etc. in EventTunnel
     'compute' : function(property) {
-      this[property] = {
-        'nearTime': this.viz.config.nearTime,
-        'farTime': this.viz.config.farTime,
-        'scale' : this.viz.config.constantS,
-        'radius' : this.viz.config.constantR
-      };
+      this.state = this.getUpdatedState();
+      this[property] = this.calculateDistanceRadius(this.time);
     },
     'calculateDistanceRadius': function(curTime){
-      var nearTime = this.current.nearTime;
-      var scale = this.current.scale;
-      var r = this.current.radius;
-      return r / (nearTime - curTime) * scale;
+      var nearTime = this.state.nearTime;
+      var scale = this.state.scale;
+      var r =  this.state.radius;
+      var timeDiff = nearTime - curTime;
+      if(timeDiff < 0) timeDiff = scale / 5;
+      return r / timeDiff * scale;
     },
     'animate': function(delta) {
-      this.current.nearTime = this.findDelta(delta, 'nearTime');
-      this.current.farTime = this.findDelta(delta, 'farTime');
-      this.current.radius = this.findDelta(delta, 'radius');
-      this.current.scale = this.findDelta(delta, 'scale');
+      this.currentRadius = this.findDelta(delta);
 
       if(delta >= 1) {
-        for(var prop in this.current) {
-          this.start[prop] = this.current[prop];
-          this.end[prop] = this.current[prop];
-        }
+        this.startRadius = this.currentRadius;
+        this.endRadius = this.currentRadius;
       }
 
     },
-    'findDelta': function(delta, prop) {
-        return (this.end[prop] - this.start[prop]) * delta + this.start[prop];
+    'findDelta': function(delta) {
+        return (this.endRadius - this.startRadius) * delta + this.startRadius;
     },
     'draw': function(ctx) {
 
-      var rho = this.calculateDistanceRadius(this.time);
+      var rho = this.currentRadius;
       if(rho < 0) {
         return;
       }
