@@ -54,6 +54,8 @@ $jit.EventTunnel = new Class( {
       Loader, Extras, Layouts.Tunnel
   ],
 
+  minRingRadius: 25,
+
   initialize: function(controller){
     var $EventTunnel = $jit.EventTunnel;
 
@@ -73,6 +75,7 @@ $jit.EventTunnel = new Class( {
     this.controller = this.config = $.merge(Options("Canvas", "Node", "Edge",
         "Fx", "Controller", "Tips", "NodeStyles", "Events", "Navigation", "Label"), config, controller);
 
+    this.computeScale();
     var canvasConfig = this.config;
     if(canvasConfig.useCanvas) {
       this.canvas = canvasConfig.useCanvas;
@@ -129,6 +132,17 @@ $jit.EventTunnel = new Class( {
       elem.name = (nt - elem.data.created_at.unix_timestamp);
       return r / (nt - elem.data.created_at.unix_timestamp) * s;
     };
+  },
+
+  /*
+  Compute a new scale for the placement function.
+  The scale should ensure that the farthest time visible is placed at the
+  minRingDistance.
+   */
+  computeScale: function() {
+    var timeSpan = this.config.nearTime - this.config.farTime;
+    var newScale = this.minRingRadius * timeSpan / this.config.constantR;
+    this.config.constantS = newScale;
   },
 
   /* 
@@ -301,6 +315,7 @@ $jit.EventTunnel.$extend = true;
     animateTime: function(nearTime, farTime, opt, versor) {
       this.viz.config.farTime = farTime;
       this.viz.config.nearTime = nearTime;
+      this.viz.computeScale();
       this.viz.compute('end');
       var circles = this.viz.canvas.circles;
       opt = $.merge({clearCanvas: true},opt);
