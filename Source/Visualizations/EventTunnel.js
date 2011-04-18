@@ -116,6 +116,17 @@ $jit.EventTunnel = new Class( {
   'getCanvas': function() {
     return this.canvas;
   },
+
+  'setCircleInterval' : function(newInterval) {
+     var circles = this.canvas.circles;
+    var base = this.canvas.circlesCanvas
+    circles.setInterval(newInterval, base);
+  },
+
+  'getCircleInterval' : function() {
+    var circles = this.canvas.circles;
+    return circles.getInterval();
+  },
   /* 
   
     createLevelDistanceFunc 

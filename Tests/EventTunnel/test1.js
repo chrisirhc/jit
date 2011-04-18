@@ -342,4 +342,19 @@ function init(){
     var farTime = rgraph.config.farTime - 1000;
     rgraph.fx.animateTime(nearTime, farTime, {modes:['polar'], duration:1000});
   };
+
+  // Double the number of rings.
+  button = $jit.id('double');
+  button.onclick = function() {
+    var curInterval = rgraph.getCircleInterval();
+    rgraph.setCircleInterval(curInterval / 2);
+  };
+
+  // Halve the number of rings.
+  button = $jit.id('halve');
+  button.onclick = function() {
+    var curInterval = rgraph.getCircleInterval();
+    rgraph.setCircleInterval(curInterval * 2);
+  };
+
 }

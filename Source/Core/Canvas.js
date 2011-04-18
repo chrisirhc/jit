@@ -499,6 +499,16 @@ var Canvas;
       this.plot(base);
     },
 
+    'setInterval' : function(newInterval, base){
+      this.config.levelDistance = newInterval;
+      this.rings = this.resetRings();
+      this.plot(base);
+    },
+
+    'getInterval' : function(newInterval, base){
+        return this.config.levelDistance;
+    },
+
     'plot': function(base) {
       base.clear();
       var canvas = base.canvas,
