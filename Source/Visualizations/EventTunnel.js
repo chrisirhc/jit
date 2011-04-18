@@ -129,8 +129,10 @@ $jit.EventTunnel = new Class( {
     var r = this.config.constantR;
     return function(elem){
       // TODO change this to the time of the root ?
-      elem.name = (nt - elem.data.created_at.unix_timestamp);
-      return r / (nt - elem.data.created_at.unix_timestamp) * s;
+      var timeDiff = nt - elem.data.created_at.unix_timestamp;
+      if(timeDiff < 0) timeDiff = s / 5;
+      elem.name = timeDiff;
+      return r / timeDiff * s;
     };
   },
 
