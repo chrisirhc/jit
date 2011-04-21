@@ -117,6 +117,10 @@ $jit.EventTunnel = new Class( {
     return this.canvas;
   },
 
+  /**
+   * Set the time interval represented by the space between the circles.
+   * @param newInterval The interval between the circles in seconds.
+   */
   'setCircleInterval' : function(newInterval) {
      var circles = this.canvas.circles;
     var base = this.canvas.circlesCanvas
