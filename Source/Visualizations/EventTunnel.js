@@ -340,6 +340,96 @@ $jit.EventTunnel.$extend = true;
       opt = $.merge({clearCanvas: true},opt);
       this.animate(opt, versor);
       circles.animate(this.viz.canvas.circlesCanvas, opt);
+    },
+
+    animate: function(opt, versor) {
+      opt = $.merge(this.viz.config, opt || {});
+      var that = this,
+          viz = this.viz,
+          graph  = viz.graph,
+          interp = this.Interpolator,
+          animation =  opt.type === 'nodefx'? this.nodeFxAnimation : this.animation;
+      //prepare graph values
+      var m = this.prepare(opt.modes);
+
+      //animate
+      if(opt.hideLabels) this.labels.hideLabels(true);
+      animation.setOptions($.extend(opt, {
+        $animating: false,
+        compute: function(delta) {
+          graph.eachNode(function(node) {
+            for(var p in m) {
+              interp[p](node, m[p], delta, versor);
+            }
+                      var newPos = node.pos.getp();
+          var rho = newPos.rho;
+            console.log(rho);
+          if(rho > viz.maxRingRadius || rho < viz.minRingRadius) {
+            // Object has moved outside of scope.
+            // So make invisible.
+            node.data.$alpha = 0;
+            if(rho == 0) {
+              // The root fzux node.
+              node.data.$alpha = 0;
+              node.faux = true;
+            }
+          } else {
+            // if node is inside range, make sure it is visible.
+            node.data.$alpha = 1;
+          }
+          });
+          that.plot(opt, this.$animating, delta);
+          this.$animating = true;
+        },
+
+        complete: function() {
+          if(opt.hideLabels) that.labels.hideLabels(false);
+          that.plot(opt);
+          opt.onComplete();
+          opt.onAfterCompute();
+        }
+      })).start();
+    },
+
+    plotLine: function(adj, canvas, animating) {
+      var f = adj.getData('type'),
+          ctxObj = this.edge.CanvasStyles;
+      if(f != 'none') {
+        var width = adj.getData('lineWidth'),
+            color = adj.getData('color'),
+            ctx = canvas.getCtx(),
+            nodeFrom = adj.nodeFrom,
+            nodeTo = adj.nodeTo;
+
+        ctx.save();
+        ctx.lineWidth = width;
+        ctx.fillStyle = ctx.strokeStyle = color;
+
+        var min = Math.min(nodeFrom.getData('alpha'),
+            nodeTo.getData('alpha'),
+            adj.getData('alpha'));
+        var max = Math.max(nodeFrom.getData('alpha'),
+            nodeTo.getData('alpha'),
+            adj.getData('alpha'))
+        ctx.globalAlpha = 1;
+
+        if(max < 1 && min < 1) {
+          ctx.globalAlpha = 0;
+        } else if(max < 1 || min < 1) {
+          ctx.globalAlpha = .3;
+        }
+
+        if(adj.faux | nodeFrom.faux | nodeTo.faux) {
+          ctx.globalAlpha = 0;
+        }
+
+        for(var s in ctxObj) {
+          ctx[s] = adj.getCanvasStyle(s);
+        }
+
+        this.edgeTypes[f].render.call(this, adj, canvas, animating);
+        ctx.restore();
+      }
     }
 
   });
