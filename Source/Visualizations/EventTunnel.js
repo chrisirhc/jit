@@ -361,15 +361,18 @@ $jit.EventTunnel.$extend = true;
             for(var p in m) {
               interp[p](node, m[p], delta, versor);
             }
-                      var newPos = node.pos.getp();
-          var rho = newPos.rho;
-            console.log(rho);
-          if(rho > viz.maxRingRadius || rho < viz.minRingRadius) {
+            var newPosC = node.pos.getc();
+            var newPosP = node.pos.getp();
+            var rho = newPosP.rho;
+            var nodeVisible = Math.abs(newPosC.x)<= viz.maxRingRadius && Math.abs(newPosC.y) <= viz.maxRingRadius
+                && rho >= viz.minRingRadius;
+            if(!nodeVisible) {
             // Object has moved outside of scope.
             // So make invisible.
             node.data.$alpha = 0;
+            if(delta == 1) node.data.$alpha = 0;
             if(rho == 0) {
-              // The root fzux node.
+              // The root faux node.
               node.data.$alpha = 0;
               node.faux = true;
             }
@@ -419,7 +422,11 @@ $jit.EventTunnel.$extend = true;
           ctx.globalAlpha = .3;
         }
 
-        if(adj.faux | nodeFrom.faux | nodeTo.faux) {
+        // Look to see if any of the nodes are positioned at 0,0.
+        // If so, we're dealing with the root node, don't draw a line.
+        var nodeFromRho = nodeFrom.pos.getp().rho;
+        var nodeToRho = nodeTo.pos.getp().rho;
+        if(nodeFromRho == 0 || nodeToRho == 0) {
           ctx.globalAlpha = 0;
         }
 

@@ -2894,10 +2894,10 @@ function init(){
       },
 
       onBeforePlotNode: function(node) {
-        if (node.data.type == "reply") {
-          node.data.$type = "reply";
-        } else {
+        if (node.data.type == "retweet") {
           node.data.$type = "retweet";
+        } else {
+          node.data.$type = "reply";
         }
         node.data.$lineWidth = lineWidth;
       },
@@ -2910,7 +2910,7 @@ function init(){
 
       onBeforePlotLine: function(adj){
         var nodeTo = adj.nodeTo;
-        if (nodeTo.data.type != "reply") {
+        if (nodeTo.data.type == "retweet") {
           adj.data.$type = "retweet";
         }
       },
@@ -2939,6 +2939,11 @@ function init(){
         style.left = (left - w / 2) + 'px';
       }
     });
+
+  // Add type to each node's data
+  for(var i = 0; i < json.length; i++) {
+    json[i].data.type = json[i].type;
+  }
     //load JSON data
     rgraph.loadJSON(json);
     //trigger small animation
