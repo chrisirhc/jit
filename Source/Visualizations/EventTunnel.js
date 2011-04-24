@@ -121,15 +121,15 @@ $jit.EventTunnel = new Class( {
    * Set the time interval represented by the space between the circles.
    * @param newInterval The interval between the circles in seconds.
    */
-  'setCircleInterval' : function(newInterval) {
+  'setTimeStep' : function(newInterval) {
      var circles = this.canvas.circles;
     var base = this.canvas.circlesCanvas
-    circles.setInterval(newInterval, base);
+    circles.setTimeStep(newInterval, base);
   },
 
-  'getCircleInterval' : function() {
+  'getTimeStep' : function() {
     var circles = this.canvas.circles;
-    return circles.getInterval();
+    return circles.getTimeStep();
   },
   /* 
   
@@ -238,53 +238,10 @@ $jit.EventTunnel = new Class( {
    id - A <Graph.Node> id.
    opt - (optional|object) An object containing some extra properties described below
    hideLabels - (boolean) Default's *true*. Hide labels when performing the animation.
-
-   Example:
-
-   (start code js)
-     rgraph.onClick('someid');
-     //or also...
-     rgraph.onClick('someid', {
-      hideLabels: false
-     });
-    (end code)
-    
   */
   onClick: function(id, opt){
     if (this.root != id && !this.busy) {
-      this.busy = true;
-      this.root = id;
-      var that = this;
-      this.controller.onBeforeCompute(this.graph.getNode(id));
-      var obj = this.getNodeAndParentAngle(id);
-
-      // second constraint
-      this.tagChildren(obj.parent, id);
-      this.parent = obj.parent;
-      this.compute('end');
-
-      // first constraint
-      var thetaDiff = obj.theta - obj.parent.endPos.theta;
-      this.graph.eachNode(function(elem){
-        elem.endPos.set(elem.endPos.getp().add($P(thetaDiff, 0)));
-      });
-
-      var mode = this.config.interpolation;
-      opt = $.merge( {
-        onComplete: $.empty
-      }, opt || {});
-
-      this.fx.animate($.merge( {
-        hideLabels: true,
-        modes: [
-          mode
-        ]
-      }, opt, {
-        onComplete: function(){
-          that.busy = false;
-          opt.onComplete();
-        }
-      }));
+      console.log(id);
     }
   }
 });

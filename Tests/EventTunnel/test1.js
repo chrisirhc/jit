@@ -2979,15 +2979,15 @@ function init(){
   // Double the number of rings.
   button = $jit.id('double');
   button.onclick = function() {
-    var curInterval = rgraph.getCircleInterval();
-    rgraph.setCircleInterval(curInterval / 2);
+    var curInterval = rgraph.getTimeStep();
+    rgraph.setTimeStep(curInterval / 2);
   };
 
   // Halve the number of rings.
   button = $jit.id('halve');
   button.onclick = function() {
-    var curInterval = rgraph.getCircleInterval();
-    rgraph.setCircleInterval(curInterval * 2);
+    var curInterval = rgraph.getTimeStep();
+    rgraph.setTimeStep(curInterval * 2);
   };
 
 }

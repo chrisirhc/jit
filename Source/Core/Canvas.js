@@ -499,13 +499,13 @@ var Canvas;
       this.plot(base);
     },
 
-    'setInterval' : function(newInterval, base){
+    'setTimeStep' : function(newInterval, base){
       this.config.levelDistance = newInterval;
       this.rings = this.resetRings();
       this.plot(base);
     },
 
-    'getInterval' : function(newInterval, base){
+    'getTimeStep' : function(newInterval, base){
         return this.config.levelDistance;
     },
 
