@@ -315,6 +315,7 @@ $jit.EventTunnel.$extend = true;
         $animating: false,
         compute: function(delta) {
           graph.eachNode(function(node) {
+            node.$animating = true;
             for(var p in m) {
               interp[p](node, m[p], delta, versor);
             }
@@ -324,31 +325,58 @@ $jit.EventTunnel.$extend = true;
             var nodeVisible = Math.abs(newPosC.x)<= viz.maxRingRadius && Math.abs(newPosC.y) <= viz.maxRingRadius
                 && rho >= viz.minRingRadius;
             if(!nodeVisible) {
-            // Object has moved outside of scope.
-            // So make invisible.
-            node.data.$alpha = 0;
-            if(delta == 1) node.data.$alpha = 0;
-            if(rho == 0) {
-              // The root faux node.
-              node.data.$alpha = 0;
-              node.faux = true;
+              // Object has moved outside of scope.
+              // So make invisible.
+              if(node.data.$alpha != 0 && rho != 0) {
+                  that.animateAlpha(node, 0);
+//                node.data.$alpha = 0;
+              } else if(rho == 0) {
+                // The root faux node.
+                node.data.$alpha = 0;
+                node.faux = true;
+              }
+            } else if(node.data.$alpha != 1){
+              // if node is inside range, make sure it is visible.
+//              node.data.$alpha = 1;
+              that.animateAlpha(node, 1);
             }
-          } else {
-            // if node is inside range, make sure it is visible.
-            node.data.$alpha = 1;
-          }
           });
           that.plot(opt, this.$animating, delta);
           this.$animating = true;
         },
 
         complete: function() {
+          graph.eachNode(function(node) {
+            node.$animating = false;
+          });
           if(opt.hideLabels) that.labels.hideLabels(false);
           that.plot(opt);
+          var finishPlotting;
+          var startTime = (new Date()).getTime();
+          finishPlotting = setInterval(function(){
+            if((new Date()).getTime() - startTime >= 500){
+              clearInterval(finishPlotting);
+            }
+            that.plot(opt);
+          }, 33);
           opt.onComplete();
           opt.onAfterCompute();
         }
       })).start();
+    },
+
+    animateAlpha: function(node, alphaVal) {
+      opt = {duration: 500, $animating: false, clearCanvas: true};
+      var that = this;
+      var alphaAnim = new Animation;
+      node.setData('alpha', alphaVal, 'end');
+      alphaAnim.setOptions({
+        duration: 500,
+        clearCanvas: false,
+        compute: function(delta) {
+          that.Interpolator.number(node, 'alpha', delta, 'getData', 'setData');
+        }
+      }).start();
     },
 
     plotLine: function(adj, canvas, animating) {
@@ -365,18 +393,13 @@ $jit.EventTunnel.$extend = true;
         ctx.lineWidth = width;
         ctx.fillStyle = ctx.strokeStyle = color;
 
-        var min = Math.min(nodeFrom.getData('alpha'),
-            nodeTo.getData('alpha'),
-            adj.getData('alpha'));
-        var max = Math.max(nodeFrom.getData('alpha'),
-            nodeTo.getData('alpha'),
-            adj.getData('alpha'))
+        var min = Math.min(nodeFrom.getData('alpha'),nodeTo.getData('alpha'));
+        var max = Math.max(nodeFrom.getData('alpha'),nodeTo.getData('alpha'));
         ctx.globalAlpha = 1;
 
-        if(max < 1 && min < 1) {
-          ctx.globalAlpha = 0;
-        } else if(max < 1 || min < 1) {
-          ctx.globalAlpha = .3;
+        if(max < 1 || min < 1) {
+          var avg = (max + min) / 2;
+          ctx.globalAlpha = avg * avg;
         }
 
         // Look to see if any of the nodes are positioned at 0,0.
