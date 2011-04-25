@@ -2921,7 +2921,7 @@ function init(){
       onCreateLabel: function(domElement, node){
         domElement.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
         domElement.onclick = function(){
-          rgraph.onClick(node.id);
+          rgraph.onClick(node.id, {x: domElement.offsetLeft, y: domElement.offsetTop, time: node.data.created_at.unix_timestamp});
           ;  }
       },
       //Change some label dom properties.
@@ -2950,11 +2950,12 @@ function init(){
     rgraph.graph.eachNode(function(n) {
       var pos = n.getPos();
       pos.setc(0, 0);
+      n.setData('alpha',0);
     });
     rgraph.compute('end');
     rgraph.fx.animate({
       modes:['polar'],
-      duration: 2000
+      duration: 1000
     });
     //end
     //append information about the root relations in the right column

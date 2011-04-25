@@ -131,6 +131,25 @@ $jit.EventTunnel = new Class( {
     var circles = this.canvas.circles;
     return circles.getTimeStep();
   },
+
+  /**
+   * Returns the time corresponding to the x,y position on the canvas.
+   * @param x The x position inside the canvas where the top left corner is 0,0.
+   * @param y The y position inside the canvas where the top left corner is 0,0.
+   */
+  'getTimeAtPosition': function(x, y) {
+    var canvas = this.canvas.circlesCanvas.canvas;
+    var centerX = canvas.width / 2;
+    var centerY = canvas.height / 2;
+    var position = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+    var radius = this.config.constantR;
+    var dist = this.config.distanceFromCamera;
+    var nearTime = this.config.nearTime;
+    var focalL = this.config.focalLength;
+
+    var time = nearTime + dist - focalL * radius / position;
+    return time;
+  },
   /* 
   
     createLevelDistanceFunc 
@@ -240,9 +259,18 @@ $jit.EventTunnel = new Class( {
    hideLabels - (boolean) Default's *true*. Hide labels when performing the animation.
   */
   onClick: function(id, opt){
-    if (this.root != id && !this.busy) {
-      console.log(id);
-    }
+    var canvas = this.canvas.circlesCanvas.canvas;
+    var canvasX = canvas.offsetLeft;
+    var canvasY = canvas.offsetTop;
+    var x = opt.x - canvasX;
+    var y = opt.y - canvasY;
+    var computedTime = this.getTimeAtPosition(x,y);
+
+    console.log("id:" + id);
+    console.log("timestamp: " + opt.time);
+    console.log("computed Time: " + computedTime);
+    console.log("");
+
   }
 });
 
