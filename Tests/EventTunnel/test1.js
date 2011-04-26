@@ -2867,7 +2867,9 @@ function init(){
         // Set the nearTime as the most recent tweet so that we can see
         // something
         nearTime: 1303282433,
-        farTime:  1303244603,
+        farTime:  /*1303006711*/ 1303244603,
+        maxRingRadius: 300,
+        minRingRadius: 25,
         //Add navigation capabilities:
         //zooming by scrolling and panning.
         Navigation: {
