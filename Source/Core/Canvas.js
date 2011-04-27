@@ -570,11 +570,12 @@ var Canvas;
       var firstRing = this.rings[0];
       var newRing;
       var options;
-      var last = this.rings.length - 1;
+      var numRings = this.rings.length;
+      var last = numRings - 1;
 
       // Add rings to end
-      var nextRingTime = this.rings[last].time - timeInterval;
-      while(nextRingTime >= farTime) {
+      var nextRingTime = numRings ? this.rings[last].time - timeInterval : null;
+      while(nextRingTime && nextRingTime >= farTime) {
         options = {time: nextRingTime, state: firstRing.getState()};
 
         newRing = new Canvas.Background.Ring(this.viz, options);
@@ -584,8 +585,8 @@ var Canvas;
 
       // Add rings to the beginning.
       var projectionPlane = nearTime + (dist - focalLen);
-      var prevRingTime = this.rings[0].time + timeInterval;
-      while(prevRingTime <= projectionPlane) {
+      var prevRingTime = numRings ? this.rings[0].time + timeInterval : null;
+      while(prevRingTime && prevRingTime <= projectionPlane) {
         options = {time: prevRingTime, state: firstRing.getState()};
 
         newRing = new Canvas.Background.Ring(this.viz, options);
@@ -596,17 +597,18 @@ var Canvas;
     pruneRings: function() {
       var nearTime = this.viz.config.nearTime;
       var farTime = this.viz.config.farTime;
+      var numRings = this.rings.length;
 
       // Remove rings from end
       var last = this.rings.length - 1;
-      while(this.rings[last].time < farTime && last >= 0) {
+      while(numRings && this.rings[last].time < farTime && last >= 0) {
         // Remove rings at the end
         this.rings.pop();
         last = this.rings.length - 1;
       }
 
       // Remove rings from beginning
-      while(this.rings[0].time > nearTime && this.rings.length > 0) {
+      while(numRings && this.rings[0].time > nearTime && this.rings.length > 0) {
         this.rings.shift();
       }
 
