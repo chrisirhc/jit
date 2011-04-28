@@ -2966,7 +2966,7 @@ function init(){
     // Go backward in time now time goes backward
     var button = $jit.id('forward');
     button.onclick = function() {
-      var nearTime = rgraph.config.nearTime + 5000;
+      var nearTime = rgraph.config.nearTime + 1000;
       var farTime = rgraph.config.farTime + 1000;
       rgraph.fx.animateTime(nearTime, farTime, {modes:['polar'], duration:1000});
     };
@@ -2974,7 +2974,7 @@ function init(){
     // Now time goes forward
     button = $jit.id('backward');
   button.onclick = function() {
-    var nearTime = rgraph.config.nearTime - 5000;
+    var nearTime = rgraph.config.nearTime - 1000;
     var farTime = rgraph.config.farTime - 1000;
     rgraph.fx.animateTime(nearTime, farTime, {modes:['polar'], duration:1000});
   };

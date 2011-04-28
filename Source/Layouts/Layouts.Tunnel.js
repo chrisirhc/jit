@@ -30,6 +30,140 @@ Layouts.Tunnel = new Class({
     this.computePositions(prop, lengthFunc);
   },
 
+  /**
+   * New Function.  Computes the angle spanned by a single node.  This varies depending on how far a node is
+   * from the center of the event tunnel.
+   * @author Baxter
+   * @param node
+   * @param getLength
+   */
+  findAngleOfNode : function(node, getLength) {
+    var distance = getLength(node);
+    var radius = node.getData('dim');
+    var halfAngle = Math.asin(radius / distance);
+    return halfAngle * 2 || 0;
+  },
+
+
+  /**
+   * New function.  Computes the angle spanned by a node and its children.
+   * @author Baxter
+   * @param node
+   * @param getLength
+   */
+  setAngleSpan : function(node, getLength) {
+    var children = [];
+    var that = this;
+    $jit.Graph.Util.eachSubnode(node, function(node) {
+      that.setAngleSpan(node, getLength);
+      children.push(node);
+    });
+
+    var nodeSpan = this.findAngleOfNode(node, getLength);
+    if(children.length == 0) {
+      // If there are no children, angle span is zero.
+      node.angleSpan = {
+        begin: 0,
+        end: 0
+      }
+    } else {
+      // Otherwise, set span to accomodate span of children.
+
+      // check if first child node overlaps node.
+      var firstChild = children[0];
+      var radius = node.getData('dim');
+      var curNodePos = getLength(node);
+      var childNodePos = getLength(firstChild);
+      var nodesOverlap = Math.abs((childNodePos - curNodePos) < (radius * 2));
+
+      // if so, shift this node over.
+      if(nodesOverlap) {
+        firstChild.angleSpan.begin += nodeSpan;
+        firstChild.angleSpan.end += nodeSpan;
+      }
+
+      // get sum of span of children
+      var spanSum = 0;
+      for(var i = 0; i < children.length; i++) {
+        var child = children[i];
+        var childSpan = child.angleSpan.end;
+        spanSum += childSpan;
+      }
+      // Set span of current node
+      node.angleSpan = {
+        begin: 0,
+        end: spanSum
+      }
+    }
+
+  },
+
+  plotNodeAndChildren: function(node, startAngle, endAngle, property, getLength, skipNodePlot) {
+    // Plot current node.
+    if(!skipNodePlot) {
+      var propArray = property;
+      for (var i=0; i < propArray.length; i++) {
+        var pi = propArray[i];
+        node.setPos($P(startAngle, getLength(node)), pi);
+      }
+    }
+
+    // Next, do work required to plot children.
+    var that = this;
+    var totalSpan = 0;
+    var numSimpleSubgraphs = 0; // Simple subgraphs can be plotted as a line.
+    var numChildren = 0;
+    // Loop through each child to find out how much space each node needs.
+    $jit.Graph.Util.eachSubnode(node, function(node) {
+          totalSpan += node.angleSpan.end;
+          if(node.angleSpan.end == 0) {
+             numSimpleSubgraphs++;
+          }
+          numChildren++;
+     });
+
+    if(numChildren == 0) return;
+    var spaceAvailable = endAngle - startAngle;
+    var leftOverSpace = spaceAvailable - totalSpan;
+    if(leftOverSpace < 0) console.log("Warning: Layouts.Tunnel.plotNodeAndChildre() - leftOverSpace < 0");
+    var extraSpacePerChild = leftOverSpace / numChildren;
+    var offset = 0;
+//    console.log("total span: " + totalSpan);
+//    console.log("space available: " + spaceAvailable);
+//    console.log("leftover space: " + leftOverSpace);
+//    console.log("numChildren: " + numChildren);
+    // Loop through each child of root and plot it.
+    $jit.Graph.Util.eachSubnode(node, function(node) {
+        var spaceNeeded = node.angleSpan.end - node.angleSpan.begin;
+        var spaceAlotted = spaceNeeded + extraSpacePerChild/2;
+        var nodeStartAngle = offset + node.angleSpan.begin + startAngle + extraSpacePerChild/2;
+        var nodeEndAngle = nodeStartAngle + spaceAlotted;
+      console.log("anglespan.begin: " + node.angleSpan.begin* 180 / (2 * Math.PI));
+//       console.log("spaceNeeded:" + spaceNeeded * 180 / (2 * Math.PI));
+//      console.log("space alotted: " + spaceAlotted * 180 / (2 * Math.PI));
+//      console.log("node start angle: " + nodeStartAngle * 180 / (2 * Math.PI));
+//      console.log("node end angle: " + nodeEndAngle * 180 / (2 * Math.PI));
+//      console.log(" ");
+//      node.setPos($P(nodeStartAngle, getLength(node)), 'end');
+        that.plotNodeAndChildren(node, nodeStartAngle, nodeEndAngle,property, getLength, false);
+        offset = nodeEndAngle;
+    });
+
+  },
+
+//  plotNode: function(node, angleStart, angleEnd, getLength) {
+//    var that = this;
+//    var startAngle = node.angleSpan.begin;
+//    var curAngle = angleStart + startAngle;
+//    node.setPos($P(curAngle, getLength(node)), pi);
+//    var offset = 0;
+//    $jit.Graph.Util.eachSubnode(node, function(node) {
+//       that.plotNde(node, curAngle + offset, angleEnd);
+//       offset += that.findAngleOfNode(node, getLength);
+//
+//    });
+//  },
+
   /*
    * computePositions
    * 
@@ -41,6 +175,7 @@ Layouts.Tunnel = new Class({
     var root = graph.getNode(this.root);
     var parent = this.parent;
     var config = this.config;
+    var that = this;
 
     for ( var i=0, l=propArray.length; i < l; i++) {
       var pi = propArray[i];
@@ -53,51 +188,130 @@ Layouts.Tunnel = new Class({
       end : 2 * Math.PI
     };
 
-    graph.eachBFS(this.root, function(elem) {
-      var angleSpan = elem.angleSpan.end - elem.angleSpan.begin;
-      var angleInit = elem.angleSpan.begin;
-      //Calculate the sum of all angular widths
-      var totalAngularWidths = 0, subnodes = [], maxDim = {};
-      elem.eachSubnode(function(sib) {
-        totalAngularWidths += sib._treeAngularWidth;
-        //get max dim
-        for ( var i=0, l=propArray.length; i < l; i++) {
-          var pi = propArray[i], dim = sib.getData('dim', pi);
-          maxDim[pi] = (pi in maxDim)? (dim > maxDim[pi]? dim : maxDim[pi]) : dim;
-        }
-        subnodes.push(sib);
-      }, "ignore");
-      //Maintain children order
-      //Second constraint for <http://bailando.sims.berkeley.edu/papers/infovis01.htm>
-      if (parent && parent.id == elem.id && subnodes.length > 0
-          && subnodes[0].dist) {
-        subnodes.sort(function(a, b) {
-          return (a.dist >= b.dist) - (a.dist <= b.dist);
-        });
-      }
-      //Calculate nodes positions.
-      for (var k = 0, ls=subnodes.length; k < ls; k++) {
-        var child = subnodes[k];
-        if (!child._flag) {
-          var angleProportion = child._treeAngularWidth / totalAngularWidths * angleSpan;
-          var theta = angleInit + angleProportion / 2;
 
-          for ( var i=0, l=propArray.length; i < l; i++) {
-            var pi = propArray[i];
-            child.setPos($P(theta, getLength(child)), pi);
-            child.setData('span', angleProportion, pi);
-            child.setData('dim-quotient', child.getData('dim', pi) / maxDim[pi], pi);
-          }
+    // Loop through each child of the root and figure out how much room it needs.
+    $jit.Graph.Util.eachSubnode(root, function(node) {
+          that.setAngleSpan(node, getLength);
+//          console.log("child node span: " + (node.angleSpan.end * 180 / (2 * Math.PI)));
+     });
 
-          child.angleSpan = {
-            begin : angleInit,
-            end : angleInit + angleProportion
-          };
-          angleInit += angleProportion;
-        }
-      }
-    }, "ignore");
+    this.plotNodeAndChildren(root, 0, 2 * Math.PI, propArray, getLength, true);
+
   },
+
+
+  /**
+   * Sort nodes by time, and plot nodes around circle based on the time.
+   * @param property
+   * @param getLength
+   */
+//computePositions : function(property, getLength) {
+//    var propArray = property;
+//    var graph = this.graph;
+//    var root = graph.getNode(this.root);
+//    var parent = this.parent;
+//    var config = this.config;
+//    var that = this;
+//
+//    for ( var i=0, l=propArray.length; i < l; i++) {
+//      var pi = propArray[i];
+//      root.setPos($P(0, 0), pi);
+//      root.setData('span', Math.PI * 2, pi);
+//    }
+//
+//    root.angleSpan = {
+//      begin : 0,
+//      end : 2 * Math.PI
+//    };
+//
+//    var nodes = [];
+//     console.log(nodes);
+//    for(var key in graph.nodes) {
+//      nodes.push(graph.getNode(key));
+//    }
+////    console.log(nodes);
+//
+//    var timeSort = function(a,b) {
+//      console.log("sort");
+//      console.log(a);
+//      if(!a || !b) return 0;
+//      if(!a.data.created_at) {
+//        return -1;
+//      } else if(!b.data.created_at) {
+//        return 1;
+//      }
+//      var aTime = a.data.created_at.unix_timestamp;
+//      var bTime = b.data.created_at.unix_timestamp;
+//      return aTime - bTime;
+//    };
+////
+//    var curAngle = 0;
+//
+//    nodes.sort(timeSort);
+//    for(var i = 0; i < nodes.length; i++) {
+//       curAngle = (curAngle + (15/ 180 * Math.PI)) % (2 * Math.PI);
+//      var node = nodes[i];
+//      if(node.data.created_at) {
+//        console.log(node.data.created_at.unix_timestamp);
+//        node.setPos($P(curAngle, getLength(node)), pi);
+//      }
+//    }
+//
+//    graph.eachDFS(this.root, function(elem) {
+////      var angleSpan = elem.angleSpan.end - elem.angleSpan.begin;
+//      curAngle = (curAngle + (15/ 180 * Math.PI)) % (2 * Math.PI);
+//      if(elem.data.created_at) {
+//        elem.setPos($P(curAngle, getLength(elem)), pi);
+//      }
+//    }, "ignore");
+//  },
+
+
+//  graph.eachDFS(this.root, function(elem) {
+//      var angleSpan = elem.angleSpan.end - elem.angleSpan.begin;
+//      var angleInit = elem.angleSpan.begin;
+//      //Calculate the sum of all angular widths
+//      var totalAngularWidths = 0, subnodes = [], maxDim = {};
+//      elem.eachSubnode(function(sib) {
+//        totalAngularWidths += sib._treeAngularWidth;
+//        //get max dim
+//        for ( var i=0, l=propArray.length; i < l; i++) {
+//          var pi = propArray[i], dim = sib.getData('dim', pi);
+//          maxDim[pi] = (pi in maxDim)? (dim > maxDim[pi]? dim : maxDim[pi]) : dim;
+//        }
+//        subnodes.push(sib);
+//      }, "ignore");
+//      //Maintain children order
+//      //Second constraint for <http://bailando.sims.berkeley.edu/papers/infovis01.htm>
+//      if (parent && parent.id == elem.id && subnodes.length > 0
+//          && subnodes[0].dist) {
+//        subnodes.sort(function(a, b) {
+//          return (a.dist >= b.dist) - (a.dist <= b.dist);
+//        });
+//      }
+//      //Calculate nodes positions.
+//      for (var k = 0, ls=subnodes.length; k < ls; k++) {
+//        var child = subnodes[k];
+//        if (!child._flag) {
+//          var angleProportion = child._treeAngularWidth / totalAngularWidths * angleSpan;
+//          var theta = angleInit + angleProportion / 2;
+//
+//          for ( var i=0, l=propArray.length; i < l; i++) {
+//            var pi = propArray[i];
+//            child.setPos($P(theta, getLength(child)), pi);
+//            child.setData('span', angleProportion, pi);
+//            child.setData('dim-quotient', child.getData('dim', pi) / maxDim[pi], pi);
+//          }
+//
+//          child.angleSpan = {
+//            begin : angleInit,
+//            end : angleInit + angleProportion
+//          };
+//          angleInit += angleProportion;
+//        }
+//      }
+//    }, "ignore");
+//  },
 
   /*
    * Method: setAngularWidthForNodes
