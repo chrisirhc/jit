@@ -99,6 +99,7 @@ Layouts.Tunnel = new Class({
   },
 
   plotNodeAndChildren: function(node, startAngle, endAngle, property, getLength, skipNodePlot) {
+    var minAngleForNode = 5 * (2 * Math.PI) / 180;
     // Plot current node.
     if(!skipNodePlot) {
       var propArray = property;
@@ -111,13 +112,13 @@ Layouts.Tunnel = new Class({
     // Next, do work required to plot children.
     var that = this;
     var totalSpan = 0;
-    var numSimpleSubgraphs = 0; // Simple subgraphs can be plotted as a line.
+    var numSimpleChildren= 0; // Simple subgraphs can be plotted as a line.
     var numChildren = 0;
     // Loop through each child to find out how much space each node needs.
     $jit.Graph.Util.eachSubnode(node, function(node) {
           totalSpan += node.angleSpan.end;
           if(node.angleSpan.end == 0) {
-             numSimpleSubgraphs++;
+             numSimpleChildren++;
           }
           numChildren++;
      });
@@ -125,44 +126,41 @@ Layouts.Tunnel = new Class({
     if(numChildren == 0) return;
     var spaceAvailable = endAngle - startAngle;
     var leftOverSpace = spaceAvailable - totalSpan;
-    if(leftOverSpace < 0) console.log("Warning: Layouts.Tunnel.plotNodeAndChildre() - leftOverSpace < 0");
+//    if(leftOverSpace < 0) console.log("Warning: Layouts.Tunnel.plotNodeAndChildre() - leftOverSpace < 0");
     var extraSpacePerChild = leftOverSpace / numChildren;
+
+    var notEnoughSpace = false;
+    var contraction = 0;
+    if(extraSpacePerChild < minAngleForNode && numSimpleChildren > 0) {
+       notEnoughSpace = true;
+       var spaceForSimpleChildren = minAngleForNode * numSimpleChildren;
+       contraction = leftOverSpace - spaceForSimpleChildren;
+       var numComplexChildren = numChildren - numSimpleChildren;
+       contraction /= (numComplexChildren || 1);
+       extraSpacePerChild = 0;
+    }
+
     var offset = 0;
-//    console.log("total span: " + totalSpan);
-//    console.log("space available: " + spaceAvailable);
-//    console.log("leftover space: " + leftOverSpace);
-//    console.log("numChildren: " + numChildren);
+    var parentIsSimple = node.angleSpan.end == 0;
     // Loop through each child of root and plot it.
     $jit.Graph.Util.eachSubnode(node, function(node) {
+        var isSimpleNode = node.angleSpan.end == 0;
         var spaceNeeded = node.angleSpan.end - node.angleSpan.begin;
-        var spaceAlotted = spaceNeeded + extraSpacePerChild/2;
+        var spaceAlotted = spaceNeeded + extraSpacePerChild/2 + contraction/2;
         var nodeStartAngle = offset + node.angleSpan.begin + startAngle + extraSpacePerChild/2;
+        if(notEnoughSpace && isSimpleNode) {
+           spaceAlotted = minAngleForNode/2;
+           nodeStartAngle += minAngleForNode / 2;
+
+        }else{
+          nodeStartAngle += contraction/2;
+        }
         var nodeEndAngle = nodeStartAngle + spaceAlotted;
-      console.log("anglespan.begin: " + node.angleSpan.begin* 180 / (2 * Math.PI));
-//       console.log("spaceNeeded:" + spaceNeeded * 180 / (2 * Math.PI));
-//      console.log("space alotted: " + spaceAlotted * 180 / (2 * Math.PI));
-//      console.log("node start angle: " + nodeStartAngle * 180 / (2 * Math.PI));
-//      console.log("node end angle: " + nodeEndAngle * 180 / (2 * Math.PI));
-//      console.log(" ");
-//      node.setPos($P(nodeStartAngle, getLength(node)), 'end');
         that.plotNodeAndChildren(node, nodeStartAngle, nodeEndAngle,property, getLength, false);
         offset = nodeEndAngle;
     });
 
   },
-
-//  plotNode: function(node, angleStart, angleEnd, getLength) {
-//    var that = this;
-//    var startAngle = node.angleSpan.begin;
-//    var curAngle = angleStart + startAngle;
-//    node.setPos($P(curAngle, getLength(node)), pi);
-//    var offset = 0;
-//    $jit.Graph.Util.eachSubnode(node, function(node) {
-//       that.plotNde(node, curAngle + offset, angleEnd);
-//       offset += that.findAngleOfNode(node, getLength);
-//
-//    });
-//  },
 
   /*
    * computePositions
