@@ -1,3 +1,9 @@
+/**
+ * Modified canvas to render the circles how we wanted.  Also added some accessor methods to let eventTunnel
+ * call animations on the canvas circles.  New Circle code takes up ~30% of space towards bottom of file.
+ * @author Baxter
+ */
+
 /*
  * File: Canvas.js
  *
@@ -479,9 +485,14 @@ var Canvas;
       this.viz.plot(this);
     }
   });
-  //background canvases
-  //TODO(nico): document this!
+
+
   Canvas.Background = {};
+
+  /**
+   * Circles heavily modified, essentially rewritten to accomodate our circle layout.
+   * @author Baxter
+   */
   Canvas.Background.Circles = new Class({
     initialize: function(viz, options) {
       this.viz = viz;
@@ -621,6 +632,11 @@ var Canvas;
 
   });
 
+
+  /**
+   * Object created to persist data associated with a ring, allowing ring to animate through time.
+   * @author Baxter
+   */
   Canvas.Background.Ring = new Class({
     'initialize' : function(viz, options) {
       this.viz = viz;

@@ -1,3 +1,8 @@
+/**
+ * Added a color helper object at the bottom of the file.  The rest is original.  ColorHelper takes up maybe ~10% of
+ * file.
+ * @author Baxter
+ */
 /*
    File: Helpers.js
  
@@ -663,6 +668,10 @@ var EdgeHelper = {
   }
 };
 
+/**
+ * @author Baxter
+ * Wrote color helper class to help with custom rendering of nodes and edges.
+ */
 var ColorHelper = {
   'parseColorToNum' : function(colorString) {
     var len = colorString.length;

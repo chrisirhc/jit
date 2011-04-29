@@ -1,3 +1,8 @@
+/**
+ * This file is based on the RGraph with substantial reuse from that file.  A few modifications, additional functions,
+ * properties, etc. are included to make this graph work how we want it to work.  ~20% New code.
+ * Authors: Meredith Baxter & Chris Chua
+ */
 /*
  * File: EventTunnel.js
  *
@@ -54,6 +59,10 @@ $jit.EventTunnel = new Class( {
       Loader, Extras, Layouts.Tunnel
   ],
 
+  /**
+   * Modified to include several EventTunnel specific parameters.
+   * @param controller
+   */
   initialize: function(controller){
     var $EventTunnel = $jit.EventTunnel;
 
@@ -117,6 +126,7 @@ $jit.EventTunnel = new Class( {
   },
 
   /**
+   * @author Baxter
    * Set the time interval represented by the space between the circles.
    * @param newInterval The interval between the circles in seconds.
    */
@@ -126,12 +136,16 @@ $jit.EventTunnel = new Class( {
     circles.setTimeStep(newInterval, base);
   },
 
+  /**
+   * @author Baxter
+   */
   'getTimeStep' : function() {
     var circles = this.canvas.circles;
     return circles.getTimeStep();
   },
 
   /**
+   * @author Baxter
    * Returns the time corresponding to the x,y position on the canvas.
    * @param x The x position inside the canvas where the top left corner is 0,0.
    * @param y The y position inside the canvas where the top left corner is 0,0.
@@ -149,11 +163,12 @@ $jit.EventTunnel = new Class( {
     var time = nearTime + dist - focalL * radius / position;
     return time;
   },
-  /* 
-  
-    createLevelDistanceFunc 
-  
-    Returns the levelDistance function used for calculating a node distance 
+
+  /**
+   * @author Chua
+    createLevelDistanceFunc
+
+    Returns the levelDistance function used for calculating a node distance
     to its origin. The resulting function gets the
     parent node as parameter and returns a float.
 
@@ -173,6 +188,12 @@ $jit.EventTunnel = new Class( {
     };
   },
 
+  /**
+   * @author Baxter
+   * Computes focal length and distance so that the minRingRadius and maxRingRadius constraints are adhered to.
+   * Ensure that nodes plotted at nearTime appear at the maxRingRadius and
+   * nodes plotted at farTime appear at the minRingRadius.
+   */
   computeFocalLengthAndDistance: function() {
     var radius = this.config.constantR;
     var span = this.config.nearTime - this.config.farTime;
@@ -315,6 +336,14 @@ $jit.EventTunnel.$extend = true;
 
     Implements: Graph.Plot,
 
+    /**
+     * @author Baxter
+     * Animates eventTunnel to a new time range.
+     * @param nearTime
+     * @param farTime
+     * @param opt
+     * @param versor
+     */
     animateTime: function(nearTime, farTime, opt, versor) {
       this.viz.config.farTime = farTime;
       this.viz.config.nearTime = nearTime;
@@ -326,6 +355,12 @@ $jit.EventTunnel.$extend = true;
       circles.animate(this.viz.canvas.circlesCanvas, opt);
     },
 
+    /**
+     * @author Baxter
+     * Function based on original animation function.  Modified to hide and reveal nodes that move into and out of range.
+     * @param opt
+     * @param versor
+     */
     animate: function(opt, versor) {
       opt = $.merge(this.viz.config, opt || {});
       var that = this,
@@ -392,6 +427,12 @@ $jit.EventTunnel.$extend = true;
       })).start();
     },
 
+    /**
+     * @author Baxter
+     * Animates the alpha value of a node.
+     * @param node
+     * @param alphaVal
+     */
     animateAlpha: function(node, alphaVal) {
       opt = {duration: 500, $animating: false, clearCanvas: true};
       var that = this;
@@ -406,6 +447,15 @@ $jit.EventTunnel.$extend = true;
       }).start();
     },
 
+    /**
+     * @author Baxter
+     * Based on the original plot line function in Graph.Plot
+     * Modified to make edges fade to 1/4 opacity when one node is invisible, fades to 0 opacity when no nodes
+     * are visible. Fades to opacity of 1 when both nodes become visible.
+     * @param adj
+     * @param canvas
+     * @param animating
+     */
     plotLine: function(adj, canvas, animating) {
       var f = adj.getData('type'),
           ctxObj = this.edge.CanvasStyles;
@@ -695,7 +745,10 @@ $jit.EventTunnel.$extend = true;
         return this.nodeHelper.star.contains(npos, pos, dim);
       }
     },
-    
+    /**
+     * @author Baxter
+     * Wrote custom rendering functions for tweet vs. retweet display.
+     */
     'reply': {
       'render': function(node, canvas){
         var pos = node.pos.getc(true),
@@ -778,6 +831,10 @@ $jit.EventTunnel.$extend = true;
         return this.edgeHelper.line.contains(from, to, pos, this.edge.epsilon);
       }
     },
+    /**
+     * @author Baxter
+     * Wrote custom rendering for retweet edge,  desaturates edge.
+     */
     'retweet': {
       'render': function(adj, canvas) {
         var from = adj.nodeFrom.pos.getc(true),

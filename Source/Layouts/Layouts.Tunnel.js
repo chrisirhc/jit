@@ -1,3 +1,8 @@
+/**
+ *   This class was originally based on Layout.Radial.  But the layout function was completely rewritten, so it is
+ *   essentially all new code.  ~80% new code.  Written by Meredith Baxter.
+ */
+
 /*
  * Class: Layouts.Tunnel
  * 
@@ -98,6 +103,15 @@ Layouts.Tunnel = new Class({
 
   },
 
+  /**
+   * @author Baxter
+   * @param node
+   * @param startAngle
+   * @param endAngle
+   * @param property
+   * @param getLength
+   * @param skipNodePlot
+   */
   plotNodeAndChildren: function(node, startAngle, endAngle, property, getLength, skipNodePlot) {
     var minAngleForNode = 5 * (2 * Math.PI) / 180;
     // Plot current node.
@@ -164,7 +178,7 @@ Layouts.Tunnel = new Class({
 
   /*
    * computePositions
-   * 
+   * modified by Baxter
    * Performs the main algorithm for computing node positions.
    */
   computePositions : function(property, getLength) {
@@ -186,7 +200,7 @@ Layouts.Tunnel = new Class({
       end : 2 * Math.PI
     };
 
-
+     // Modified by Baxter
     // Loop through each child of the root and figure out how much room it needs.
     $jit.Graph.Util.eachSubnode(root, function(node) {
           that.setAngleSpan(node, getLength);
@@ -197,119 +211,6 @@ Layouts.Tunnel = new Class({
 
   },
 
-
-  /**
-   * Sort nodes by time, and plot nodes around circle based on the time.
-   * @param property
-   * @param getLength
-   */
-//computePositions : function(property, getLength) {
-//    var propArray = property;
-//    var graph = this.graph;
-//    var root = graph.getNode(this.root);
-//    var parent = this.parent;
-//    var config = this.config;
-//    var that = this;
-//
-//    for ( var i=0, l=propArray.length; i < l; i++) {
-//      var pi = propArray[i];
-//      root.setPos($P(0, 0), pi);
-//      root.setData('span', Math.PI * 2, pi);
-//    }
-//
-//    root.angleSpan = {
-//      begin : 0,
-//      end : 2 * Math.PI
-//    };
-//
-//    var nodes = [];
-//     console.log(nodes);
-//    for(var key in graph.nodes) {
-//      nodes.push(graph.getNode(key));
-//    }
-////    console.log(nodes);
-//
-//    var timeSort = function(a,b) {
-//      console.log("sort");
-//      console.log(a);
-//      if(!a || !b) return 0;
-//      if(!a.data.created_at) {
-//        return -1;
-//      } else if(!b.data.created_at) {
-//        return 1;
-//      }
-//      var aTime = a.data.created_at.unix_timestamp;
-//      var bTime = b.data.created_at.unix_timestamp;
-//      return aTime - bTime;
-//    };
-////
-//    var curAngle = 0;
-//
-//    nodes.sort(timeSort);
-//    for(var i = 0; i < nodes.length; i++) {
-//       curAngle = (curAngle + (15/ 180 * Math.PI)) % (2 * Math.PI);
-//      var node = nodes[i];
-//      if(node.data.created_at) {
-//        console.log(node.data.created_at.unix_timestamp);
-//        node.setPos($P(curAngle, getLength(node)), pi);
-//      }
-//    }
-//
-//    graph.eachDFS(this.root, function(elem) {
-////      var angleSpan = elem.angleSpan.end - elem.angleSpan.begin;
-//      curAngle = (curAngle + (15/ 180 * Math.PI)) % (2 * Math.PI);
-//      if(elem.data.created_at) {
-//        elem.setPos($P(curAngle, getLength(elem)), pi);
-//      }
-//    }, "ignore");
-//  },
-
-
-//  graph.eachDFS(this.root, function(elem) {
-//      var angleSpan = elem.angleSpan.end - elem.angleSpan.begin;
-//      var angleInit = elem.angleSpan.begin;
-//      //Calculate the sum of all angular widths
-//      var totalAngularWidths = 0, subnodes = [], maxDim = {};
-//      elem.eachSubnode(function(sib) {
-//        totalAngularWidths += sib._treeAngularWidth;
-//        //get max dim
-//        for ( var i=0, l=propArray.length; i < l; i++) {
-//          var pi = propArray[i], dim = sib.getData('dim', pi);
-//          maxDim[pi] = (pi in maxDim)? (dim > maxDim[pi]? dim : maxDim[pi]) : dim;
-//        }
-//        subnodes.push(sib);
-//      }, "ignore");
-//      //Maintain children order
-//      //Second constraint for <http://bailando.sims.berkeley.edu/papers/infovis01.htm>
-//      if (parent && parent.id == elem.id && subnodes.length > 0
-//          && subnodes[0].dist) {
-//        subnodes.sort(function(a, b) {
-//          return (a.dist >= b.dist) - (a.dist <= b.dist);
-//        });
-//      }
-//      //Calculate nodes positions.
-//      for (var k = 0, ls=subnodes.length; k < ls; k++) {
-//        var child = subnodes[k];
-//        if (!child._flag) {
-//          var angleProportion = child._treeAngularWidth / totalAngularWidths * angleSpan;
-//          var theta = angleInit + angleProportion / 2;
-//
-//          for ( var i=0, l=propArray.length; i < l; i++) {
-//            var pi = propArray[i];
-//            child.setPos($P(theta, getLength(child)), pi);
-//            child.setData('span', angleProportion, pi);
-//            child.setData('dim-quotient', child.getData('dim', pi) / maxDim[pi], pi);
-//          }
-//
-//          child.angleSpan = {
-//            begin : angleInit,
-//            end : angleInit + angleProportion
-//          };
-//          angleInit += angleProportion;
-//        }
-//      }
-//    }, "ignore");
-//  },
 
   /*
    * Method: setAngularWidthForNodes
